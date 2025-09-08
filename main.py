@@ -93,27 +93,12 @@ def verify_data_quality(df):
         print(f"{col} range: {df[col].min()} to {df[col].max()}")
     return df
 
-def analyse_isoneday_isreturn(df):
+def is_isoneday_isreturn_hypothese_true(df):
     print("\n" + "="*60)
     print("ANALYZING isOneway and isReturn COLUMNS")
     print("="*60)
 
-    # Hypothese 1: Normally is oneway and isreturn should be mutually exclusive and collectively exhaustive, if they are both meaning the ticket type customer bought. But let's see what the data says.
-
-    # Get the percentage of the data are actually mutually exclusive and collectively exhaustive
-    valid = df[df['isOneway'] & ~df['isReturn']].sum() + df[~df['isOneway'] & df['isReturn']].sum()
-    invalid = df[~df['isOneway'] & ~df['isReturn']].sum() + df[df['isOneway'] & df['isReturn']].sum()
-
-    ratio = valid / (valid + invalid)
-    print(f"  {ratio*100:.2f}% of rows are valid combinations")
-    if ratio > 0.95:
-        print("✅ isOneway and isReturn are mostly mutually exclusive and collectively exhaustive")
-        print("Hypothesis: isOneway = true means one-way trip, isReturn = true means return trip, and both false means outbound leg of a round-trip is likely correct")
-    else:
-        print("❌ isOneway and isReturn are NOT mutually exclusive and collectively exhaustive")
-        print("Hypothesis: isOneway = true means one-way trip, isReturn = true means return trip, and both false means outbound leg of a round-trip is likely incorrect")
-
-    # Hypothese 2: isOneway = true means one-way trip, when isOneway = false, means it is a round-trip ticket, then isReturn = true means the return leg of the round-trip, and isReturn = false means the outbound leg of the round-trip. The other case (isOneway = true, isReturn = true) should not exist, if they do exist, we will log it and treat it as isOneway = true
+    # Hypothese: isOneway = true means one-way trip, when isOneway = false, means it is a round-trip ticket, then isReturn = true means the return leg of the round-trip, and isReturn = false means the outbound leg of the round-trip. The other case (isOneway = true, isReturn = true) should not exist, if they do exist, we will log it and treat it as isOneway = true
 
     # Get the percentage of the data are correct according to this hypothesis
     valid_oneway = (df['isOneway'] == 1) & (df['isReturn'] == 0)
@@ -142,10 +127,10 @@ def analyse_isoneday_isreturn(df):
     if (valid_oneway.sum() + valid_roundtrip.sum()) / total > 0.95 and roundtrip_ratio > 0.95 and roundtrip_ratio < 1.05:
         print("✅ isOneway and isReturn mostly make sense under this new hypothesis")
         print("Hypothesis: isOneway = true means one-way trip, isReturn = true means return trip, and both false means outbound leg of a round-trip is likely correct")
-    else: 
-        print("❌ isOneway and isReturn still don't make sense under this new hypothesis")
-        print("Hypothesis might be wrong or data quality issue")
-    return results
+        return True
+    print("❌ isOneway and isReturn still don't make sense under this new hypothesis")
+    print("Hypothesis might be wrong or data quality issue")
+    return False
 
 def test_train_specific_hypothesis(df):
     """Test if cumulative sales resets for each train"""
@@ -291,16 +276,103 @@ def feature_engineering(df):
     print("FEATURE ENGINEERING: Creating New Features")
     print("="*60)
     
-    # From the correlation analysis, we have seen that mean_net_ticket_price doesn't have a strong correlation with isReturn or isOneway, it doesn't necessarily mean that these features are not useful, let's try to create interaction terms in order to represent better the business logic.
-    # Logically there are 3 situations: isOneway( isOneway = true), isRoundtripGo (isOneway = false, isReturn = false), isRoundtripBack (isOneway = false, isReturn = true). The other cases should not exist (isOneway = true, isReturn = true), if they do exist, we will log it and treat it as isOneway = true
-    df['isRoundtripGo'] = (~df['isOneway']) & (~df['isReturn'])
+    df_features = df.copy()
+    
+    # Date-based features
+    if 'Purchase_Date' in df.columns:
+        df_features['purchase_month'] = df['Purchase_Date'].dt.month
+        df_features['purchase_day_of_week'] = df['Purchase_Date'].dt.dayofweek
+        df_features['is_weekend'] = (df['Purchase_Date'].dt.dayofweek >= 5).astype(int)
+    
+    if 'Dept_Date' in df.columns and 'Purchase_Date' in df.columns:
+        df_features['days_to_departure'] = (df['Dept_Date'] - df['Purchase_Date']).dt.days
+        df_features['departure_month'] = df['Dept_Date'].dt.month
+        df_features['departure_day_of_week'] = df['Dept_Date'].dt.dayofweek
+        df_features['is_departure_weekend'] = (df['Dept_Date'].dt.dayofweek >= 5).astype(int)
 
-    if df[(df['isOneway']) & (df['isReturn'])].shape[0] > 0:
-        print("⚠️ Warning: Found rows with both isOneway and isReturn as True. Treating them as isOneway = True.", df[(df['isOneway']) & (df['isReturn'])].shape[0])
+    # Interaction features
+    df_features['price_x_advance'] = df['mean_net_ticket_price'] * df_features['days_to_departure']
 
-        df.loc[(df['isOneway']) & (df['isReturn']), 'isReturn'] = False
+    # Aggregation features
+    # df_features['sales_momentum'] = df['Culmulative_sales'].pct_change().fillna(0)
+    
+    print(f"Created features. New shape: {df_features.shape}")
+    new_features = set(df_features.columns) - set(df.columns)
+    print(f"New features: {list(new_features)}")
 
-    return df
+    return df_features
+
+def clean_isoneway_isreturn_properly(df):
+    print("=" * 40)
+    print("DATA CLEANING REPORT:")
+    print("=" * 40)
+    
+    # Document the issue
+    original_count = len(df)
+    problematic = df[(df['isOneway'] == 1) & (df['isReturn'] == 1)]
+    
+    print(f"Original records: {original_count:,}")
+    print(f"Problematic records (isOneway=1, isReturn=1): {len(problematic):,}")
+    print(f"Percentage to remove: {len(problematic)/original_count*100:.2f}%")
+    
+    # Remove problematic records
+    df_clean = df[~((df['isOneway'] == 1) & (df['isReturn'] == 1))].copy()
+    
+    print(f"Cleaned records: {len(df_clean):,}")
+    print(f"Records removed: {original_count - len(df_clean):,}")
+    
+    # Verify the cleaning worked
+    remaining_problematic = df_clean[(df_clean['isOneway'] == 1) & (df_clean['isReturn'] == 1)]
+    print(f"Remaining problematic records: {len(remaining_problematic)}")
+    
+    # Show the cleaned distribution
+    print(f"\nCleaned data distribution:")
+    combo_counts = df_clean.groupby(['isOneway', 'isReturn']).size()
+    total_clean = len(df_clean)
+    
+    for (oneway, return_val), count in combo_counts.items():
+        pct = (count/total_clean)*100
+        if oneway == 0 and return_val == 0:
+            desc = "Round-trip tickets, outbound leg"
+        elif oneway == 0 and return_val == 1:
+            desc = "Round-trip tickets, return leg"
+        else:  # oneway == 1 and return_val == 0
+            desc = "One-way tickets"
+            
+        print(f"  {desc}: {count:,} ({pct:.1f}%)")
+    
+    return df_clean
+
+def encode_categorical(df, max_categories=20):
+    """Encode categorical variables appropriately"""
+    
+    df_encoded = df.copy()
+    
+    # Get categorical columns
+    categorical_cols = df.select_dtypes(include=['category']).columns
+
+    for col in categorical_cols:
+        n_categories = df[col].nunique()
+        if n_categories <= max_categories:
+            # One-hot encoding for low cardinality
+            dummies = pd.get_dummies(df[col], prefix=col, drop_first=True)
+            df_encoded = pd.concat([df_encoded, dummies], axis=1)
+            df_encoded = df_encoded.drop(col, axis=1)
+            print(f"{col}: One-hot encoded ({n_categories} categories)")
+        else:
+            # Handle high cardinality differently
+            print(f"{col}: Too many categories ({n_categories}), consider grouping")
+            # Option: Keep top N categories, group rest as 'Other'
+            top_categories = df[col].value_counts().head(max_categories-1).index
+            df_encoded[col] = df[col].where(df[col].isin(top_categories), 'Other')
+            
+            # Then one-hot encode
+            dummies = pd.get_dummies(df_encoded[col], prefix=col, drop_first=True)
+            df_encoded = pd.concat([df_encoded, dummies], axis=1)
+            df_encoded = df_encoded.drop(col, axis=1)
+    
+    print(f"Final encoded shape: {df_encoded.shape}")
+    return df_encoded
 
 def main_analysis(file_path):
     """Main function to run all analyses"""
@@ -315,22 +387,30 @@ def main_analysis(file_path):
     # Step 3: Verify data quality
     df = verify_data_quality(df)
 
-    # Step 4: Understand the business problem, for getting the demande function, the target is num_seats_total
+    # Step 4: Verify isOneway and isReturn column business logic, and clean data if needed
+    if is_isoneday_isreturn_hypothese_true(df):
+        df = clean_isoneway_isreturn_properly(df)
+    else:
+        print("❌ isOneway and isReturn columns do not make sense under the new hypothesis. Please investigate further.")
+        return
+
+    # Step 5: Understand the business problem, for getting the demande function, the target is num_seats_total
     analyse_target(df)
 
-    # Step 5: Univariate analysis of all variables
+    # Step 6: Univariate analysis of all variables
     univariate_analysis(df)
 
-    # Step 6: Bivariate analysis of all variables
+    # Step 7: Bivariate analysis of all variables
     bivariate_analysis(df)
 
-    # Step 7: Feature engineering, create new features if needed
+
+    # Step 8: Feature engineering, create new features if needed
     df = feature_engineering(df)
 
+    # Step 9: Encode categorical variables
+    df = encode_categorical(df)
 
-    # The number of seats sold even though it is not in the 1.5 IQR range, they are still valid reasonable business data, imagine group tours or special events where large groups book tickets together, leading to spikes in ticket sales on certain days. These spikes can be perfectly valid and reflect real-world scenarios, so they should be retained in the dataset for accurate analysis.
-
-
+    print(df.describe())
     return
 
 # Run the analysis

@@ -1,0 +1,150 @@
+🚂 ANALYZING CUMULATIVE SALES IN TRAIN DATA 🚂
+
+============================================================
+LOADING AND EXPLORING TRAIN DATA
+============================================================
+Dataset shape: (209697, 10)
+Columns: ['num_seats_total', 'mean_net_ticket_price', 'Dept_Date', 'Purchase_Date', 'Train_Number_All', 'Culmulative_sales', 'isNormCabin', 'isReturn', 'isOneway', 'Customer_Cat']
+
+First few rows:
+   num_seats_total  mean_net_ticket_price  ... isOneway Customer_Cat
+0                1             188.663422  ...        0            A
+1                1             358.428869  ...        0            A
+2                1             356.372684  ...        0            A
+3                1             396.370505  ...        0            A
+4                1             364.264552  ...        0            A
+
+[5 rows x 10 columns]
+
+Data types:
+num_seats_total            int64
+mean_net_ticket_price    float64
+Dept_Date                 object
+Purchase_Date             object
+Train_Number_All          object
+Culmulative_sales          int64
+isNormCabin                int64
+isReturn                   int64
+isOneway                   int64
+Customer_Cat              object
+dtype: object
+
+Basic statistics:
+       num_seats_total  mean_net_ticket_price  ...       isReturn       isOneway
+count    209697.000000          209697.000000  ...  209697.000000  209697.000000
+mean          2.383019             230.116900  ...       0.480183       0.122873
+std           2.083324             147.024784  ...       0.499608       0.328292
+min           1.000000               1.278969  ...       0.000000       0.000000
+25%           1.000000             108.870193  ...       0.000000       0.000000
+50%           2.000000             186.282199  ...       0.000000       0.000000
+75%           3.000000             350.409481  ...       1.000000       0.000000
+max          66.000000            7855.766106  ...       1.000000       1.000000
+
+[8 rows x 6 columns]
+
+============================================================
+CONVERTING DATES and Categorical Variables
+============================================================
+Date conversion completed!
+
+Data types after conversion: num_seats_total                   int64
+mean_net_ticket_price           float64
+Dept_Date                datetime64[ns]
+Purchase_Date            datetime64[ns]
+Train_Number_All               category
+Culmulative_sales                 int64
+isNormCabin                        bool
+isReturn                           bool
+isOneway                           bool
+isCategoryA                        bool
+dtype: object
+
+============================================================
+VERIFYING DATA QUALITY
+============================================================
+No missing values found!
+No duplicate rows found!
+
+Unique values per column:
+num_seats_total: 43 unique values
+mean_net_ticket_price: 209688 unique values
+Dept_Date: 722 unique values
+Purchase_Date: 395 unique values
+Train_Number_All: 15 unique values
+Culmulative_sales: 170 unique values
+isNormCabin: [ True False] total 2 unique values
+isReturn: [False  True] total 2 unique values
+isOneway: [False  True] total 2 unique values
+isCategoryA: [ True False] total 2 unique values
+num_seats_total range: 1 to 66
+mean_net_ticket_price range: 1.278969082 to 7855.766106
+Dept_Date range: 2018-06-01 00:00:00 to 2020-06-13 00:00:00
+Purchase_Date range: 2018-06-01 00:00:00 to 2019-06-30 00:00:00
+Train_Number_All range: A to O
+Culmulative_sales range: 1 to 187
+isNormCabin range: False to True
+isReturn range: False to True
+isOneway range: False to True
+isCategoryA range: False to True
+
+============================================================
+ANALYZING isOneway and isReturn COLUMNS
+============================================================
+
+Ratio of return/outbound: 0.990
+(Should be close to 1.0 if your theory is correct)
+
+96.05% of rows are valid combinations under this new hypothesis
+✅ isOneway and isReturn mostly make sense under this new hypothesis
+Hypothesis: isOneway = true means one-way trip, isReturn = true means return trip, and both false means outbound leg of a round-trip is likely correct
+========================================
+DATA CLEANING REPORT:
+========================================
+Original records: 209,697
+Problematic records (isOneway=1, isReturn=1): 8,283
+Percentage to remove: 3.95%
+Cleaned records: 201,414
+Records removed: 8,283
+Remaining problematic records: 0
+
+Cleaned data distribution:
+  Round-trip tickets, outbound leg: 91,521 (45.4%)
+  Round-trip tickets, return leg: 92,410 (45.9%)
+  One-way tickets: 17,483 (8.7%)
+
+============================================================
+ANALYZING TARGET VARIABLE
+============================================================
+1st Percentile of num_seats_total: 1.0
+99th Percentile of num_seats_total: 10.0
+✅ Target analysis completed!
+
+============================================================
+UNIVARIATE ANALYSIS
+============================================================
+✅ Univariate analysis completed and result is saved in univariate_analysis.png!
+
+============================================================
+BIVARIATE ANALYSIS
+============================================================
+✅ Bivariate analysis completed and saved in correlation_analysis.png and categorical_correlation_analysis.png!
+
+============================================================
+FEATURE ENGINEERING: Creating New Features
+============================================================
+Created features. New shape: (201414, 18)
+New features: ['departure_day_of_week', 'purchase_day_of_week', 'price_x_advance', 'purchase_month', 'days_to_departure', 'is_weekend', 'departure_month', 'is_departure_weekend']
+Train_Number_All: One-hot encoded (15 categories)
+Final encoded shape: (201414, 31)
+       num_seats_total  ...  price_x_advance
+count    201414.000000  ...    201414.000000
+mean          2.372635  ...      9621.554861
+min           1.000000  ...         0.000000
+25%           1.000000  ...      3641.890303
+50%           2.000000  ...      6774.953712
+75%           3.000000  ...     12625.056161
+max          66.000000  ...    229173.054515
+std           2.076614  ...      9595.019489
+
+[8 rows x 13 columns]
+❌ Error during analysis: cannot unpack non-iterable NoneType object
