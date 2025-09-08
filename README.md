@@ -1,6 +1,6 @@
 # Managerial Economics Train Ticket Sales Analysis
 
-This project analyzes train ticket sales data to understand demand, sales trends, and business logic for managerial decision-making. The analysis is performed using Python, pandas, matplotlib, and seaborn.
+This project analyzes train ticket sales data to understand demand, sales trends, and business logic for getting the demand function. The analysis is performed using Python, pandas, matplotlib, and seaborn.
 
 ## Features
 - Data loading and exploration
