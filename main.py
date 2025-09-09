@@ -4,6 +4,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
 import warnings
+from sklearn.linear_model import LassoCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
 
 warnings.filterwarnings('ignore')
 
@@ -281,17 +286,51 @@ def feature_engineering(df):
     # Date-based features
     if 'Purchase_Date' in df.columns:
         df_features['purchase_month'] = df['Purchase_Date'].dt.month
-        df_features['purchase_day_of_week'] = df['Purchase_Date'].dt.dayofweek
-        df_features['is_weekend'] = (df['Purchase_Date'].dt.dayofweek >= 5).astype(int)
-    
+        df_features['purchase_is_monday'] = (df['Purchase_Date'].dt.dayofweek == 1).astype(bool)
+        df_features['purchase_is_tuesday'] = (df['Purchase_Date'].dt.dayofweek == 2).astype(bool)
+        df_features['purchase_is_wednesday'] = (df['Purchase_Date'].dt.dayofweek == 3).astype(bool)
+        df_features['purchase_is_thursday'] = (df['Purchase_Date'].dt.dayofweek == 4).astype(bool)
+        df_features['purchase_is_friday'] = (df['Purchase_Date'].dt.dayofweek == 5).astype(bool)
+        df_features['purchase_is_saturday'] = (df['Purchase_Date'].dt.dayofweek == 6).astype(bool)
+        df_features['purchase_is_weekend'] = (df['Purchase_Date'].dt.dayofweek >= 5).astype(int)
+        df_features['purchase_is_january'] = (df['Purchase_Date'].dt.month == 1).astype(bool)
+        df_features['purchase_is_february'] = (df['Purchase_Date'].dt.month == 2).astype(bool)
+        df_features['purchase_is_march'] = (df['Purchase_Date'].dt.month == 3).astype(bool)
+        df_features['purchase_is_april'] = (df['Purchase_Date'].dt.month == 4).astype(bool)
+        df_features['purchase_is_may'] = (df['Purchase_Date'].dt.month == 5).astype(bool)
+        df_features['purchase_is_june'] = (df['Purchase_Date'].dt.month == 6).astype(bool)
+        df_features['purchase_is_july'] = (df['Purchase_Date'].dt.month == 7).astype(bool)
+        df_features['purchase_is_august'] = (df['Purchase_Date'].dt.month == 8).astype(bool)
+        df_features['purchase_is_september'] = (df['Purchase_Date'].dt.month == 9).astype(bool)
+        df_features['purchase_is_october'] = (df['Purchase_Date'].dt.month == 10).astype(bool)
+        df_features['purchase_is_november'] = (df['Purchase_Date'].dt.month == 11).astype(bool)
+
     if 'Dept_Date' in df.columns and 'Purchase_Date' in df.columns:
         df_features['days_to_departure'] = (df['Dept_Date'] - df['Purchase_Date']).dt.days
         df_features['departure_month'] = df['Dept_Date'].dt.month
-        df_features['departure_day_of_week'] = df['Dept_Date'].dt.dayofweek
-        df_features['is_departure_weekend'] = (df['Dept_Date'].dt.dayofweek >= 5).astype(int)
+        df_features['departure_is_monday'] = (df['Dept_Date'].dt.dayofweek == 1).astype(bool)
+        df_features['departure_is_tuesday'] = (df['Dept_Date'].dt.dayofweek == 2).astype(bool)
+        df_features['departure_is_wednesday'] = (df['Dept_Date'].dt.dayofweek == 3).astype(bool)
+        df_features['departure_is_thursday'] = (df['Dept_Date'].dt.dayofweek == 4).astype(bool)
+        df_features['departure_is_friday'] = (df['Dept_Date'].dt.dayofweek == 5).astype(bool)
+        df_features['departure_is_saturday'] = (df['Dept_Date'].dt.dayofweek == 6).astype(bool)
+        df_features['departure_is_weekend'] = (df['Dept_Date'].dt.dayofweek >= 5).astype(int)
+        df_features['departure_is_january'] = (df['Dept_Date'].dt.month == 1).astype(bool)
+        df_features['departure_is_february'] = (df['Dept_Date'].dt.month == 2).astype(bool)
+        df_features['departure_is_march'] = (df['Dept_Date'].dt.month == 3).astype(bool)
+        df_features['departure_is_april'] = (df['Dept_Date'].dt.month == 4).astype(bool)
+        df_features['departure_is_may'] = (df['Dept_Date'].dt.month == 5).astype(bool)
+        df_features['departure_is_june'] = (df['Dept_Date'].dt.month == 6).astype(bool)
+        df_features['departure_is_july'] = (df['Dept_Date'].dt.month == 7).astype(bool)
+        df_features['departure_is_august'] = (df['Dept_Date'].dt.month == 8).astype(bool)
+        df_features['departure_is_september'] = (df['Dept_Date'].dt.month == 9).astype(bool)
+        df_features['departure_is_october'] = (df['Dept_Date'].dt.month == 10).astype(bool)
+        df_features['departure_is_november'] = (df['Dept_Date'].dt.month == 11).astype(bool)
 
     # Interaction features
-    df_features['price_x_advance'] = df['mean_net_ticket_price'] * df_features['days_to_departure']
+    df_features['price_x_advance'] = df_features['mean_net_ticket_price'] * df_features['days_to_departure']
+    df_features['price_x_weekend'] = df_features['mean_net_ticket_price'] * df_features['departure_is_weekend']
+    df_features['price_x_accumulative'] = df_features['mean_net_ticket_price'] * df_features['Culmulative_sales']
 
     # Aggregation features
     # df_features['sales_momentum'] = df['Culmulative_sales'].pct_change().fillna(0)
@@ -343,9 +382,12 @@ def clean_isoneway_isreturn_properly(df):
     
     return df_clean
 
-def encode_categorical(df, max_categories=20):
+def encode_categorical(df, max_categories=15):
     """Encode categorical variables appropriately"""
-    
+    print("\n" + "="*60)
+    print("FEATURE ENGINEERING: Encoding Categorical Variables")
+    print("="*60)
+
     df_encoded = df.copy()
     
     # Get categorical columns
@@ -364,8 +406,11 @@ def encode_categorical(df, max_categories=20):
             print(f"{col}: Too many categories ({n_categories}), consider grouping")
             # Option: Keep top N categories, group rest as 'Other'
             top_categories = df[col].value_counts().head(max_categories-1).index
-            df_encoded[col] = df[col].where(df[col].isin(top_categories), 'Other')
-            
+            # Add 'Other' to categories if not present
+            if 'Other' not in df_encoded[col].cat.categories:
+                df_encoded[col] = df_encoded[col].cat.add_categories(['Other'])
+            df_encoded[col] = df_encoded[col].where(~df_encoded[col].isin(top_categories), 'Other')
+
             # Then one-hot encode
             dummies = pd.get_dummies(df_encoded[col], prefix=col, drop_first=True)
             df_encoded = pd.concat([df_encoded, dummies], axis=1)
@@ -373,6 +418,108 @@ def encode_categorical(df, max_categories=20):
     
     print(f"Final encoded shape: {df_encoded.shape}")
     return df_encoded
+
+def lasso_feature_selection(X, y):
+    """Use LASSO to select features"""
+    print("\n" + "="*60)
+    print("LASSO Feature Selection")
+    print("="*60)
+ 
+    # Prepare features
+    feature_names = X.columns.tolist()
+    
+    # Scale features
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    
+    # LASSO with CV
+    lasso = LassoCV(cv=5, random_state=42, max_iter=2000)
+    lasso.fit(X_scaled, y)
+    
+    # Get selected features
+    selected_mask = lasso.coef_ != 0
+    selected_features = [feature_names[i] for i, mask in enumerate(selected_mask) if mask]
+    eliminated_features = [feature_names[i] for i, mask in enumerate(selected_mask) if not mask]
+
+    print(f"LASSO selected {len(selected_features)} out of {len(feature_names)} features \n")
+    print(f"Selected features: {selected_features} \n")
+    print(f"Eliminated features: {eliminated_features} \n")
+
+    return selected_features, lasso, scaler
+
+def build_final_model(X, y, selected_features):
+    """Build and validate final model"""
+    print("\n" + "="*60)
+    print("Model Building & Validation")
+    print("="*60)
+    # Use only selected features
+    X_final = X[selected_features]
+    
+    # Split data
+    X_train, X_test, y_train, y_test = train_test_split(
+        X_final, y, test_size=0.2, random_state=42
+    )
+    
+    # Train model
+    model = LinearRegression()
+    model.fit(X_train, y_train)
+    
+    # Predictions
+    y_train_pred = model.predict(X_train)
+    y_test_pred = model.predict(X_test)
+    
+    # Evaluation
+    train_r2 = r2_score(y_train, y_train_pred)
+    test_r2 = r2_score(y_test, y_test_pred)
+    train_rmse = np.sqrt(mean_squared_error(y_train, y_train_pred))
+    test_rmse = np.sqrt(mean_squared_error(y_test, y_test_pred))
+    
+    # Cross-validation
+    cv_scores = cross_val_score(model, X_final, y, cv=5, scoring='r2')
+    
+    print("="*50)
+    print("FINAL MODEL PERFORMANCE")
+    print("="*50)
+    print(f"Training R²: {train_r2:.4f}")
+    print(f"Test R²: {test_r2:.4f}")
+    print(f"Training RMSE: {train_rmse:.4f}")
+    print(f"Test RMSE: {test_rmse:.4f}")
+    print(f"Cross-validation R²: {cv_scores.mean():.4f} (±{cv_scores.std():.4f})")
+    
+    # Feature importance
+    feature_importance = pd.DataFrame({
+        'feature': selected_features,
+        'coefficient': model.coef_
+    }).sort_values('coefficient', key=abs, ascending=False)
+    
+    print("\nFeature Importance:")
+    print(feature_importance)
+    
+    # Analyze residuals
+    residuals = y_test - y_test_pred
+    plt.figure(figsize=(10, 4 * 5))
+
+    ax1 = plt.subplot(4, 1, 1)
+    ax1.scatter(y_test_pred, residuals, alpha=0.5)
+    ax1.set_xlabel('Predicted Values')
+    ax1.set_ylabel('Residuals')
+    ax1.axhline(y=0, color='r', linestyle='--')
+    ax1.set_title('Residual Plot')
+
+    i = 2
+    # Check if residuals have patterns by important features
+    for feature in ['mean_net_ticket_price', 'Culmulative_sales', 'days_to_departure']:
+        if feature in X_test.columns:
+            ax = plt.subplot(4, 1, i)
+            ax.scatter(X_test[feature], residuals, alpha=0.5)
+            ax.set_xlabel(feature)
+            ax.set_ylabel('Residuals')
+            ax.axhline(y=0, color='r', linestyle='--')
+            ax.set_title(f'Residuals vs {feature}')
+            i += 1
+
+    plt.savefig('residual_analysis.png', dpi=200)
+    return model, feature_importance
 
 def main_analysis(file_path):
     """Main function to run all analyses"""
@@ -410,8 +557,20 @@ def main_analysis(file_path):
     # Step 9: Encode categorical variables
     df = encode_categorical(df)
 
-    print(df.describe())
-    return
+    # Step 10: LASSO feature selection
+    feature_cols = [col for col in df.columns if (np.issubdtype(df[col].dtype, np.number) or df[col].dtype == 'bool') and col != "num_seats_total"]
+    X = df[feature_cols]
+
+    # Log-transform the target to reduce skewness
+    y = np.log1p(df["num_seats_total"])
+
+    # Step 11: LASSO feature selection
+    # selected_features, lasso_model, scaler = lasso_feature_selection(X, y)
+    selected_features = feature_cols
+    
+    # Step 12: Build and validate final model
+    final_model, feature_importance = build_final_model(X, y, selected_features)
+    print(final_model, feature_importance)
 
 # Run the analysis
 if __name__ == "__main__":
