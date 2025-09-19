@@ -1,0 +1,284 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\geometry{margin=1in}
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\renewcommand{\footrulewidth}{0.4pt} % adds a line at the top of the footer
+\fancyfoot[R]{\thepage} % right-aligned page number
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+% Reduce space before/after sections and subsections
+% \usepackage{titlesec}
+% \titlespacing*{\section}{0pt}{1.2ex plus .2ex minus .2ex}{1.0ex plus .1ex}
+% \titlespacing*{\subsection}{0pt}{1ex plus .2ex minus .2ex}{0.7ex plus .1ex}
+% \titlespacing*{\subsubsection}{0pt}{0.8ex plus .2ex minus .2ex}{0.4ex plus .1ex}
+
+% Reduce space before/after itemize/enumerate
+\usepackage{enumitem}
+\setlist{itemsep=0.1em, topsep=0.1em, leftmargin=2em}
+
+\title{DBA5101: Estimation of Demand Function for Train Travel}
+\author{}
+\date{}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    {\Huge\bfseries DBA5101 Group Project\\[0.5em]}
+    {\Huge Estimation of Demand Function for Train Travel \par}
+    \vspace{1cm}
+    \includegraphics[width=0.30\textwidth]{nus_logo.png} \\[2em]
+    {\large Group Members\par}
+    \vspace{0.5cm}
+    {\small
+    CHAN HIU LOK \\[0.2em]
+    CHEN HANGYU \\[0.2em]
+    SANYA RAJPAL \\[0.2em]
+    TANYA TOOLEY \\[0.2em]
+    WANG YING \\[0.2em]
+    }
+    \vspace{2cm}
+    {\large
+    National University of Singapore \\
+    \vspace{0.5cm}
+    Submission Date: September 20, 2025
+    }
+    \vfill
+\end{titlepage}
+\thispagestyle{fancy}
+
+% PAGE 1: INTRODUCTION & DATA OVERVIEW
+\section{Introduction \& Data Overview}
+
+This study estimates the demand function for train travel using 209,697 observations of ticket sales data. We address the fundamental endogeneity problem where price and quantity are simultaneously determined, causing standard OLS to underestimate true price sensitivity.
+
+We apply both OLS and Two-Stage Least Squares (2SLS) using seasonal operational cost patterns as instrumental variables. OLS results suggest highly inelastic demand (elasticity $\approx$ -0.08 to -0.12), but 2SLS reveals substantially more price-sensitive demand (elasticity -0.59 to -1.41), confirming significant endogeneity bias.
+
+\subsection{Data and Feature Engineering}
+Our dataset comprises 209,697 observations of train ticket sales with rich information on pricing, customer characteristics, and temporal patterns. And data quality is good with no significant missing values, we had to perform date alignedment and cleaning to ensure consistency.
+
+The existing features include: num\_seats\_total, mean\_net\_ticket\_price, Dept\_Date, \\
+Purchase\_Date, Train\_Number\_All, Culmulative\_sales, isNormCabin, isReturn, isOneway, Customer\_Cat. But we have performed feature engineering to create additional relevant variables, the steps are summarized below:
+
+\begin{enumerate}[label=$\rightarrow$]
+    \item Temporal Feature Creation:
+    \begin{itemize}
+        \item \textit{days\_to\_departure}: booking horizon (not suitable as an instrumental variable since it is determined by consumer behavior, but useful as a control variable. We use the quadratic term to capture non-linear advance purchase effects; see Appendix~\ref{app:days_square} for details.)
+        \item \textit{departure\_season}: Seasonal dummies (Winter, Spring, Summer, Fall) for supply-side cost variation, used as both demand shifters in OLS and instrumental variables in 2SLS. We chose seasonal over monthly patterns; see Appendix~\ref{app:season_choice} for details.
+        \item \textit{departure\_is\_weekend}: Weekend travel indicator for demand pattern differences.
+    \end{itemize}
+
+    \item Categorical Variable Transformation: Converted all categorical variables \\
+    (Customer\_Cat, Train\_Number\_All, departure\_season) to dummy variables using one-hot encoding, dropping the first category to avoid multicollinearity. This enables direct coefficient interpretation and eliminates ordinality assumptions.
+
+    \item Customer-Service Interaction Terms:
+    \begin{itemize}
+        \item \texttt{Business\_x\_Premium}: Business travelers choosing premium cabins
+        \item \texttt{Individual\_x\_Premium}: Leisure travelers choosing premium cabins
+        \item \texttt{Business\_x\_NormCabin}: Business travelers choosing normal cabins
+    \end{itemize}
+
+    \item \textbf{Target Variable Transformation:} Created \texttt{log\_num\_seats\_total} and \texttt{log\_price} to enable log-linear demand specification comparison with linear models. Log transformation addresses distributional issues and enables direct elasticity interpretation; see Appendix~\ref{app:log_transform} for details. 
+
+\end{enumerate}
+
+\textbf{Rationale:} This feature engineering approach captures demand heterogeneity across customer segments and service types while providing valid instrumental variables (seasonal patterns) for addressing price endogeneity.
+
+Data quality validation confirmed the internal consistency of ticket type classifications and revealed no significant missing values or outliers that would compromise the analysis.
+
+\subsection{Descriptive Statistics}
+Preliminary analysis reveals a negative correlation between price and quantity demanded, consistent with economic theory. Customer segmentation shows distinct patterns: business travelers more frequently choose premium cabins and exhibit different booking timing compared to leisure travelers. 
+
+Temporal analysis indicates strong seasonal patterns in both pricing and demand, with summer months showing higher prices and different demand elasticity. The booking horizon variable exhibits non-linear effects, with demand patterns varying significantly between early bookings (60+ days), optimal booking windows (14-30 days), and last-minute purchases (<7 days).
+
+The correlation between price deciles and trip types (correlation = 0.14) suggests that more expensive tickets are slightly more likely to be one-way trips, reflecting business travel patterns and premium routing decisions.
+
+\section{Methodology \& Instrumental Variable Strategy}
+
+\subsection{Demand Function Specification}
+We estimate demand functions using both linear and log-linear specifications to capture different elasticity patterns:
+
+\textbf{Linear Model:}
+\begin{equation}
+\text{quantity}_i = \beta_0 + \beta_1 \cdot \text{price}_i + \beta_2 \cdot \text{demand\_shifters}_i + \varepsilon_i
+\end{equation}
+
+\textbf{Log-Linear Model:}
+\begin{equation}
+\log(\text{quantity}_i) = \beta_0 + \beta_1 \cdot \log(\text{price}_i) + \beta_2 \cdot \text{demand\_shifters}_i + \varepsilon_i
+\end{equation}
+
+Demand shifters include days to departure, weekend departure indicators, customer segments, seasonal patterns, cabin type preferences, and interaction terms capturing customer-service combinations (Business×Premium, Individual×Premium, Business×Normal).
+
+\subsection{Endogeneity Problem}
+Standard OLS estimation faces a fundamental endogeneity challenge: price and quantity are simultaneously determined in equilibrium. High-demand periods lead to higher prices, creating positive correlation between unobserved demand shocks and price. This simultaneity bias typically causes OLS to underestimate the true price elasticity of demand.
+
+The bias direction can be formalized as:
+\begin{equation}
+\text{plim}(\hat{\beta}_1^{OLS}) = \beta_1 + \frac{\text{Cov}(\text{price}, \varepsilon)}{\text{Var}(\text{price})} > \beta_1
+\end{equation}
+
+Since demand shocks positively correlate with price, OLS estimates are biased toward zero, understating consumer price sensitivity.
+
+\subsection{Instrumental Variable Selection}
+We conducted comprehensive temporal instrumental variable investigation to identify valid instruments for price. After systematic comparison of monthly versus seasonal temporal patterns, we selected departure season dummies as primary instruments based on:
+
+\textbf{Statistical Strength:}
+\begin{itemize}
+    \item Season F-statistic: 209.50 (well above F > 10 threshold)
+    \item Month F-statistic: 152.38 (lower than seasonal)
+    \item Strong first-stage predictive power for pricing
+\end{itemize}
+
+\textbf{Economic Justification:}
+\begin{itemize}
+    \item \textbf{Relevance}: Seasonal operational cost variations (heating, peak capacity, weather disruptions) directly affect pricing decisions
+    \item \textbf{Exogeneity}: Seasonal patterns reflect supply-side operational cycles, predetermined by calendar timing
+    \item \textbf{Exclusion Restriction}: Seasons affect quantity demanded only through their impact on pricing, not through direct consumer preferences
+\end{itemize}
+
+Additional instruments include cumulative sales (capacity constraints) and train route characteristics (fixed operational factors), providing over-identification for robustness testing.
+
+\section{Results \& Analysis}
+
+\subsection{Estimation Results Comparison}
+We compare OLS (treating price as exogenous) with 2SLS (using seasonal instruments to correct endogeneity):
+
+\begin{table}[H]
+\centering
+\caption{Demand Estimation Results: OLS vs 2SLS Comparison}
+\begin{tabular}{lcccc}
+\toprule
+Method & Specification & Price Elasticity & R² & Bias Factor \\
+\midrule
+OLS & Linear & -0.0820 & 0.0763 & -- \\
+OLS & Log-log & -0.1189 & 0.1167 & -- \\
+2SLS & Linear & -1.4093 & -0.3149 & 17.2× \\
+2SLS & Log-log & -0.5895 & -0.0383 & 5.0× \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Endogeneity Bias Confirmation:} OLS systematically underestimates price sensitivity by factors of 5-17. The negative R² values in 2SLS are expected when correcting for endogeneity—the methodology trades prediction accuracy for causal identification.
+
+\subsection{Key Findings \& Validation}
+\textbf{True Demand Elasticity:} After endogeneity correction, train travel exhibits moderate to elastic demand (elasticities -0.59 to -1.41) versus highly inelastic OLS estimates (-0.08 to -0.12).
+
+\textbf{Heterogeneity Patterns:} Interaction terms reveal: (1) business travelers with premium service show distinct demand patterns, (2) weekend travel exhibits different price sensitivity, and (3) non-linear booking horizon effects across purchase windows.
+
+\textbf{Instrument Validation:} Our seasonal IV strategy satisfies validity requirements: first-stage F-statistic = 209.50 > 10 (strength), seasonal operational cost variations provide credible supply-side price variation (exogeneity), and results remain consistent across specifications (robustness).
+
+\section{Economic Interpretation \& Conclusions}
+
+\subsection{Economic Implications}
+Our corrected elasticity estimates reveal train travel demand is significantly more price-sensitive than conventional wisdom suggests. With elasticities between -0.59 and -1.41, consumers respond substantially to price changes: 10\% price increases lead to 6-14\% reduction in quantity demanded. Linear specification suggests elastic demand ($|\varepsilon| > 1$), implying price increases reduce total revenue, while log-linear specification indicates moderate elasticity with mixed revenue effects.
+
+The elastic demand suggests competitive pressures and available substitutes that passengers utilize when prices rise.
+
+\subsection{Methodological Contributions \& Limitations}
+This analysis demonstrates the critical importance of addressing endogeneity in transportation demand estimation. Our systematic temporal instrumental variable selection provides a replicable framework, with seasonal versus monthly instrument comparison offering insights for future transportation research. The inclusion of customer-service interaction terms reveals demand heterogeneity often missed in aggregate analyses.
+
+\textbf{Limitations:} Results reflect a single train station and time period, potentially limiting generalizability. Our cross-sectional approach cannot capture dynamic demand responses or habit formation effects. Future research should examine network effects and competition from alternative transportation modes.
+
+\subsection{Conclusions}
+This study provides robust evidence that train travel demand is significantly more price-elastic than previously estimated. After correcting for endogeneity using seasonal operational cost instruments, we find demand elasticities between -0.59 and -1.41, substantially higher than uncorrected estimates of -0.08 to -0.12.
+
+From a methodological perspective, this analysis underscores the critical importance of addressing endogeneity in transportation demand estimation and provides a robust framework for instrumental variable selection. The use of seasonal operational cost variation as instruments offers a promising approach for future transportation economics research.
+
+\newpage
+\section*{Appendix}
+
+\subsection*{1. Rationale for \textit{days\_to\_departure} Quadratic Term}\label{app:days_square}
+
+The booking horizon variable (\textit{days\_to\_departure}) requires special attention in our demand specification for two key reasons: its endogenous relationship with price and its non-linear effect on demand.
+
+\textbf{Relationship with Price and Demand:} Our correlation analysis reveals that \textit{days\_to\_departure} is negatively correlated with \textit{mean\_net\_ticket\_price} (correlation = $-0.51$), confirming the presence of dynamic pricing where ticket prices increase as departure approaches. Simultaneously, \textit{days\_to\_departure} shows positive correlation with \textit{num\_seats\_total} (correlation = $0.20$), indicating higher sales volumes for advance bookings.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{booking_spec_correlation_heatmap.png}
+    \caption{\small Correlation Heatmap: Price, Quantity, Days to Departure}
+    \label{fig:correlation_heatmap}
+\end{figure}
+
+\textbf{Why Not an Instrumental Variable:} Although \textit{days\_to\_departure} strongly predicts price (first-stage $R^2 = 0.399$), it fails the exogeneity requirement for instrumental variables. Booking horizon reflects consumer choice timing, making it endogenous to demand preferences rather than a supply-side cost factor. Therefore, we treat it as a control variable to isolate demand shifts unrelated to pricing.
+
+\textbf{Specification Choice:} We tested three functional forms for incorporating booking horizon effects:
+\begin{enumerate}[label=$\rightarrow$]
+    \item \textbf{Linear}: Simple linear relationship with days to departure
+    \item \textbf{Categorical}: Four business-quantile categories based on 5th, 20th, and 90th percentiles of booking horizon
+    \item \textbf{Quadratic}: Linear and squared terms to capture non-linearity
+\end{enumerate}
+
+The quadratic specification outperformed alternatives in explanatory power for both demand ($R^2 = 0.0477$) and price prediction ($R^2 = 0.399$), capturing the empirical reality that booking behavior accelerates non-linearly as departure approaches.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{booking_specifications_comparison.png}
+    \caption{\small Model Performance: Different \textit{days\_to\_departure} Specifications for Demand}
+    \label{fig:demand_specifications}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{booking_specifications_price_comparison.png}
+    \caption{\small Model Performance: Different \textit{days\_to\_departure} Specifications for Price}
+    \label{fig:price_specifications}
+\end{figure}
+
+\newpage
+\subsection*{2. Choice of Seasonal Dummies over Monthly Dummies}\label{app:season_choice}
+
+We tested seasonal versus monthly dummies as temporal variables, which serve as demand shifters in OLS and instrumental variables in 2SLS estimation.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{temporal_iv_analysis.png}
+    \caption{\small Temporal Instrumental Variable Analysis: Monthly vs Seasonal Patterns}
+    \label{fig:temporal_iv_analysis}
+\end{figure}
+
+\textbf{Statistical Superiority:} Seasonal dummies demonstrate stronger instrument performance with F-statistic = 209.50 compared to monthly dummies (F-statistic = 152.38), both exceeding the F > 10 threshold for instrument strength.
+
+\textbf{Economic Rationale:} Seasonal patterns better capture supply-side operational cost cycles (heating, capacity, weather disruptions) while providing cleaner demand control variables. The four-season specification offers parsimony compared to eleven monthly dummies, reducing weak identification risks in 2SLS and multicollinearity in OLS.
+
+Seasonal dummies thus provide superior statistical strength and economic interpretability for both estimation approaches.
+
+\newpage
+\subsection*{3. Rationale for Log Transformation in Demand Specification}\label{app:log_transform}
+
+We employ both linear and log-linear specifications to capture different elasticity patterns, with log transformation addressing key econometric and economic considerations.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{target_analysis.png}
+    \caption{\small Target Variable Analysis: Distribution and Price-Quantity Relationships}
+    \label{fig:target_analysis}
+\end{figure}
+
+\textbf{Distributional Issues:} The target variable \texttt{num\_seats\_total} exhibits substantial right-skewness in its raw form, with extreme values creating heteroskedasticity concerns in linear regression. Log transformation \texttt{log\_num\_seats\_total} = log(\texttt{num\_seats\_total} + 1) normalizes the distribution and stabilizes variance across the range of observations.
+
+\textbf{Economic Interpretation:} The log-linear specification enables direct interpretation of coefficients as elasticities. In the model log(\textit{quantity}) = $\beta_0 + \beta_1$ log(\textit{price}) + $\beta_2$ \textit{demand\_shifters} + $\varepsilon$, the coefficient $\beta_1$ represents the price elasticity of demand directly, simplifying economic analysis and comparison with economic theory.
+
+\textbf{Specification Robustness:} Comparing linear and log-linear results provides specification robustness testing. Consistent elasticity signs and magnitudes across specifications strengthen confidence in the estimated demand relationships, while divergent results may indicate functional form misspecification.
+
+\textbf{Heterogeneity Accommodation:} Log specification better accommodates proportional effects across different quantity levels, allowing elasticities to remain constant while absolute price sensitivity varies with the scale of demand. This is particularly relevant for train ticket sales with substantial variation in transaction sizes.
+
+The dual specification approach thus provides both methodological robustness and enhanced economic interpretability for demand function estimation.
+
+\end{document}
