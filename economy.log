@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.8.22)  20 SEP 2025 01:26
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.8.22)  20 SEP 2025 01:36
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -427,77 +427,80 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.98 \end{enumerate}
-                     [1{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
+l.89 \textbf{Linear Model:}
+                            [1]
 
-[2]
+[2{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
+Overfull \hbox (102.63963pt too wide) in paragraph at lines 123--124
+[]\OT1/cmr/m/n/12 Customer-service in-ter-ac-tion terms (\OT1/cmtt/m/n/12 Business[]x[]Premium\OT1/cmr/m/n/12 , \OT1/cmtt/m/n/12 Individual[]x[]Premium\OT1/cmr/m/n/12 , \OT1/cmtt/m/n/12 Business[]x[]NormCabin\OT1/cmr/m/n/12 )
+ []
+
+
 
 [3]
 
 [4]
-
-[5]
-Overfull \hbox (25.55331pt too wide) in paragraph at lines 210--211
+Overfull \hbox (25.55331pt too wide) in paragraph at lines 181--182
 []\OT1/cmr/bx/n/12 Relationship with Price and De-mand: \OT1/cmr/m/n/12 Our cor-re-la-tion anal-y-sis re-veals that \OT1/cmr/m/it/12 days[]to[]departure
  []
 
-<booking_spec_correlation_heatmap.png, id=112, 578.16pt x 433.62pt>
+<booking_spec_correlation_heatmap.png, id=104, 578.16pt x 433.62pt>
 File: booking_spec_correlation_heatmap.png Graphic file (type png)
 <use booking_spec_correlation_heatmap.png>
-Package pdftex.def Info: booking_spec_correlation_heatmap.png  used on input line 214.
+Package pdftex.def Info: booking_spec_correlation_heatmap.png  used on input line 185.
 (pdftex.def)             Requested size: 140.92793pt x 105.69196pt.
-<booking_specifications_comparison.png, id=113, 1076.46165pt x 357.7365pt>
+<booking_specifications_comparison.png, id=105, 1076.46165pt x 357.7365pt>
 File: booking_specifications_comparison.png Graphic file (type png)
 <use booking_specifications_comparison.png>
-Package pdftex.def Info: booking_specifications_comparison.png  used on input line 232.
+Package pdftex.def Info: booking_specifications_comparison.png  used on input line 203.
 (pdftex.def)             Requested size: 469.75502pt x 156.11084pt.
 
 
-[6 <./booking_spec_correlation_heatmap.png>]
-<booking_specifications_price_comparison.png, id=126, 1076.46165pt x 357.7365pt>
+[5 <./booking_spec_correlation_heatmap.png>]
+<booking_specifications_price_comparison.png, id=117, 1076.46165pt x 357.7365pt>
 File: booking_specifications_price_comparison.png Graphic file (type png)
 <use booking_specifications_price_comparison.png>
-Package pdftex.def Info: booking_specifications_price_comparison.png  used on input line 239.
+Package pdftex.def Info: booking_specifications_price_comparison.png  used on input line 210.
 (pdftex.def)             Requested size: 469.75502pt x 156.11084pt.
 
 
-[7 <./booking_specifications_comparison.png> <./booking_specifications_price_comparison.png>]
-<temporal_iv_analysis.png, id=136, 1724.00085pt x 853.14735pt>
+[6 <./booking_specifications_comparison.png> <./booking_specifications_price_comparison.png>]
+<temporal_iv_analysis.png, id=128, 1724.00085pt x 853.14735pt>
 File: temporal_iv_analysis.png Graphic file (type png)
 <use temporal_iv_analysis.png>
-Package pdftex.def Info: temporal_iv_analysis.png  used on input line 251.
+Package pdftex.def Info: temporal_iv_analysis.png  used on input line 222.
 (pdftex.def)             Requested size: 422.77664pt x 209.21169pt.
 
 
-[8 <./temporal_iv_analysis.png>]
-<target_analysis.png, id=143, 1084.05pt x 722.7pt>
+[7 <./temporal_iv_analysis.png>]
+<target_analysis.png, id=135, 1084.05pt x 722.7pt>
 File: target_analysis.png Graphic file (type png)
 <use target_analysis.png>
-Package pdftex.def Info: target_analysis.png  used on input line 269.
+Package pdftex.def Info: target_analysis.png  used on input line 240.
 (pdftex.def)             Requested size: 375.80544pt x 250.53377pt.
 
 
-[9 <./target_analysis.png>] (./economy.aux)
+[8 <./target_analysis.png>] (./economy.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
 Package rerunfilecheck Info: File `economy.out' has not changed.
-(rerunfilecheck)             Checksum: BFA717AA3C3450950071F4A48402E402;2775.
+(rerunfilecheck)             Checksum: FD2E336FB604E2004B2E6DDC86115792;2732.
  ) 
 Here is how much of TeX's memory you used:
- 11284 strings out of 473190
- 174078 string characters out of 5715800
- 584379 words of memory out of 5000000
+ 11279 strings out of 473190
+ 174048 string characters out of 5715800
+ 583377 words of memory out of 5000000
  34355 multiletter control sequences out of 15000+600000
  567464 words of font info for 67 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,11n,79p,572b,623s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,12n,79p,572b,592s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb>
-Output written on economy.pdf (10 pages, 1658711 bytes).
+Output written on economy.pdf (9 pages, 1656594 bytes).
 PDF statistics:
- 220 PDF objects out of 1000 (max. 8388607)
- 168 compressed objects within 2 object streams
- 44 named destinations out of 1000 (max. 500000)
+ 211 PDF objects out of 1000 (max. 8388607)
+ 160 compressed objects within 2 object streams
+ 39 named destinations out of 1000 (max. 500000)
  143 words of extra memory for PDF output out of 10000 (max. 10000000)
 
