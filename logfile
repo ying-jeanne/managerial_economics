@@ -161,7 +161,7 @@ FEATURE ENGINEERING: Creating New Features
 ============================================================
 ⚠️  Found same-day bookings (min: 0), using log(days + 1)
 Created features. New shape: (209697, 19)
-New features: ['Business_x_NormCabin', 'departure_is_weekend', 'departure_season', 'Individual_x_Premium', 'log_days_to_departure', 'Business_x_Premium']
+New features: ['log_days_to_departure', 'Business_x_NormCabin', 'Business_x_Premium', 'departure_season', 'Individual_x_Premium', 'departure_is_weekend']
 
 ============================================================
 FEATURE ENGINEERING: Encoding Categorical Variables
@@ -229,7 +229,7 @@ Instrument strength: strong
 ============================================================
 2SLS DEMAND ESTIMATION - LINEAR
 ============================================================
-Using 15 instruments: 3 seasonal + 1 supply + 14 route
+Using 15 instruments: Culmulative_sales + 14 route
 Using 9 demand shifters (consistent with OLS)
   • Base shifters: ['departure_season_Spring', 'departure_season_Summer', 'departure_season_Winter', 'log_days_to_departure', 'departure_is_weekend']
   • Customer segments: 1
@@ -247,7 +247,7 @@ Price Elasticity: -1.6106 (p-value: 0.0000e+00)
 ============================================================
 2SLS DEMAND ESTIMATION - LOGLOG
 ============================================================
-Using 15 instruments: 3 seasonal + 1 supply + 14 route
+Using 15 instruments: Culmulative_sales + 14 route
 Using 9 demand shifters (consistent with OLS)
   • Base shifters: ['departure_season_Spring', 'departure_season_Summer', 'departure_season_Winter', 'log_days_to_departure', 'departure_is_weekend']
   • Customer segments: 1
@@ -276,7 +276,7 @@ Coefficient comparison:
 Hausman test:
   Test statistic: 6416.9428
   P-value: 0.0000
-🔍 REJECT H0: Endogeneity detected (prefer 2SLS)xwx
+🔍 REJECT H0: Endogeneity detected (prefer 2SLS)
 
 Elasticity comparison:
   OLS elasticity:  -0.0762

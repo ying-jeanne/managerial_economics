@@ -353,13 +353,13 @@ def estimate_2sls_demand(df, specification='linear'):
     print(f"2SLS DEMAND ESTIMATION - {specification.upper()}")
     print(f"{'='*60}")
     
-    # INSTRUMENTS (Z): Variables for identification, based on temporal IV investigation
-    season_cols = [col for col in df.columns if 'departure_season_' in col]  # Main instruments
+    # INSTRUMENTS (Z): Variables for identification, based on temporal IV investigationnts
     train_cols = [col for col in df.columns if 'Train_Number_All_' in col]
     instruments =  ['Culmulative_sales'] + train_cols
     available_instruments = [col for col in instruments if col in df.columns]
     
     # DEMAND SHIFTERS (W): Same as OLS (consistent approach)
+    season_cols = [col for col in df.columns if 'departure_season_' in col]
     base_shifters = season_cols + ['log_days_to_departure', 'departure_is_weekend'] 
     customer_cols = [col for col in df.columns if 'Customer_Cat_' in col]
     
@@ -369,7 +369,7 @@ def estimate_2sls_demand(df, specification='linear'):
     demand_shifters = base_shifters + customer_cols + available_interactions
     available_shifters = [col for col in demand_shifters if col in df.columns]
     
-    print(f"Using {len(available_instruments)} instruments: {len(season_cols)} seasonal + 1 supply + {len(train_cols)} route")
+    print(f"Using {len(available_instruments)} instruments: Culmulative_sales + {len(train_cols)} route")
     print(f"Using {len(available_shifters)} demand shifters (consistent with OLS)")
     print(f"  • Base shifters: {base_shifters}")
     print(f"  • Customer segments: {len([c for c in customer_cols if c in df.columns])}")

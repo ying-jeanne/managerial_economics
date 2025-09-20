@@ -10,7 +10,7 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{hyperref}
-\geometry{margin=1in}
+\geometry{margin=0.9in}
 
 \pagestyle{fancy}
 \fancyhf{} % clear all header and footer fields
@@ -18,7 +18,7 @@
 \fancyfoot[R]{\thepage} % right-aligned page number
 
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{0.5em}
+\setlength{\parskip}{0.3em}
 
 % Reduce space before/after itemize/enumerate
 \usepackage{enumitem}
@@ -142,20 +142,23 @@ We compare OLS (treating price as exogenous) with 2SLS (using supply-side instru
 \toprule
 Method & Specification & Price Elasticity & R² & Bias Factor \\
 \midrule
-OLS & Linear & -0.0646 & 0.0897 & \- \\
-OLS & Log-log & -0.1652 & 0.1406 & \- \\
-2SLS & Linear & -1.6106 & -0.3558 & 24.9× \\
-2SLS & Log-log & -0.9627 & -0.0341 & 5.8× \\
+OLS & Linear & -0.0762 & 0.0851 & \- \\
+OLS & Log-log & -0.2059 & 0.1372 & \- \\
+2SLS & Linear & -1.6106 & -0.3558 & 21.1× \\
+2SLS & Log-log & -0.9627 & -0.0341 & 4.7× \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \textbf{Specification Choice:} While both 2SLS specifications correct for endogeneity, we focus our economic interpretation on the log-log result (-0.96) rather than the linear specification (-1.61). This choice reflects methodological considerations detailed in Appendix~\ref{app:log_transform}, including superior distributional properties for the skewed quantity data, constant elasticity interpretation, and better accommodation of heteroskedasticity concerns inherent in our dataset.
 
-\textbf{Endogeneity Bias Confirmation:} OLS systematically underestimates price sensitivity by factors as we discussed in section 2.2. The 2SLS with supply-side identification reveals substantially more elastic demand than naive OLS estimates suggest.
+\textbf{Instrument Validation:} Our 2SLS uses 15 supply-side instruments: Cumulative\_sales (capacity constraint) plus 14 Train\_Number\_All dummies (route characteristics). First-stage F-statistic of 1,310.53 (p $<$ 0.001) confirms strong instrument relevance, substantially exceeding the F $>$ 10 threshold.
 
 \subsection{Key Findings \& Validation}
-\textbf{Endogeneity Correction:} 2SLS yields demand elasticity of -0.96 versus OLS estimate of -0.17, representing a 5.8× bias factor. This confirms substantial understatement of price sensitivity in standard estimation.
+
+\textbf{Endogeneity Validation:} Hausman tests strongly reject price exogeneity in both specifications (test statistics: 6,417 linear, 6,230 log-log; both p $<$ 0.001). OLS systematically understates price sensitivity: 4.7× bias in log-log (-0.21 vs -0.96) and 21.1× bias in linear specifications.
+
+\textbf{Bias Quantification:} OLS severely understates price sensitivity. Linear specification: OLS coefficient -0.000789 vs 2SLS -0.016679 (21.1× bias). Log-log specification: OLS elasticity -0.21 vs 2SLS -0.96 (4.7× bias). This confirms simultaneity bias has major economic consequences for managerial decision-making.
 
 \textbf{Model Features:} Our specification accommodates demand heterogeneity through interaction terms and non-linear booking effects, though formal testing would strengthen validation of these patterns.
 
@@ -163,14 +166,9 @@ OLS & Log-log & -0.1652 & 0.1406 & \- \\
 
 \section{Economic Interpretation \& Conclusions}
 
-\subsection{Economic Implications}
-Our corrected elasticity estimates reveal train travel demand is significantly more price-sensitive than conventional wisdom suggests. Using our consistent log specification approach, 2SLS estimation yields a demand elasticity of approximately -0.96, indicating that consumers respond substantially to price changes: a 10\% price increase leads to approximately 9.6\% reduction in quantity demanded.
+Our corrected 2SLS elasticity of -0.96 reveals train travel demand is significantly more price-sensitive than OLS suggests, approaching unit elasticity. While price increases still generate net revenue gains for operators, the near-unit elasticity indicates substantial competitive pressures and meaningful passenger substitution options.
 
-With an elasticity magnitude just below the unit elastic threshold ($|\varepsilon| = 0.96 < 1$), train travel exhibits moderately inelastic demand. This implies that while passengers are price-sensitive, price increases still generate net revenue gains for operators, though the revenue effect diminishes as elasticity approaches unity. The near-unit elasticity suggests significant competitive pressures in the rail transport market, with passengers having meaningful substitute options when prices rise.
-
-\subsection{Conclusions}
-
-From a methodological perspective, this analysis underscores the critical importance of addressing endogeneity in demand estimation and provides a robust framework for supply-side instrumental variable selection. The use of capacity constraints and route characteristics as instruments offers a promising approach for future transportation economics research.
+Methodologically, this analysis demonstrates the critical importance of addressing endogeneity in demand estimation. Our supply-side instrumental variable approach using capacity constraints and route characteristics provides a robust framework for future transportation economics research.
 
 \newpage
 \appendix
