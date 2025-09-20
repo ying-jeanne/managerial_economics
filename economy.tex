@@ -213,25 +213,23 @@ We use log transformation for the booking horizon variable (\textit{log\_days\_t
 
 \textbf{Specification Consistency:} Using log specification consistently across both demand and price equations simplifies interpretation and avoids ad-hoc functional form choices based on marginal performance differences.
 
-\newpage
 \section{Choice of Seasonal Dummies over Monthly Dummies}\label{app:season_choice}
 
-We tested seasonal versus monthly dummies as temporal variables, which serve as demand shifters in OLS and instrumental variables in 2SLS estimation.
+We tested seasonal versus monthly dummies as temporal control variables, which serve as demand shifters in both OLS and 2SLS estimation.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{temporal_iv_analysis.png}
-    \caption{\small Temporal Instrumental Variable Analysis: Monthly vs Seasonal Patterns}
+    \caption{\small Temporal Control Variable Analysis: Monthly vs Seasonal Patterns}
     \label{fig:temporal_iv_analysis}
 \end{figure}
 
-\textbf{Statistical Superiority:} Seasonal dummies demonstrate stronger instrument performance with F-statistic = 209.50 compared to monthly dummies (F-statistic = 152.38), both exceeding the \(F > 10\) threshold for instrument strength.
+\textbf{Statistical Superiority:} Seasonal dummies demonstrate stronger predictive performance with F-statistic = 209.50 compared to monthly dummies (F-statistic = 152.38), indicating better control for temporal demand patterns.
 
-\textbf{Economic Rationale:} Seasonal patterns better capture supply-side operational cost cycles (heating, capacity, weather disruptions) while providing cleaner demand control variables. The four-season specification offers parsimony compared to eleven monthly dummies, reducing weak identification risks in 2SLS and multicollinearity in OLS.
+\textbf{Economic Rationale:} Seasonal patterns better capture systematic demand variations across seasons while providing cleaner control variables. The four-season specification offers parsimony compared to eleven monthly dummies, reducing multicollinearity concerns in both OLS and 2SLS estimation.
 
-Seasonal dummies thus provide superior statistical strength and economic interpretability for both estimation approaches.
+Seasonal dummies thus provide superior statistical performance and economic interpretability as demand shifters for both estimation approaches.
 
-\newpage
 \section{Rationale for Log Transformation in Demand Specification}\label{app:log_transform}
 
 We employ both linear and log-linear specifications to capture different elasticity patterns, with log transformation addressing key econometric and economic considerations.
