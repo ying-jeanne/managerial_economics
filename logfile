@@ -61,161 +61,6 @@ isOneway                           bool
 Customer_Cat                   category
 dtype: object
 
-================================================================================
-📅 TEMPORAL INSTRUMENTAL VARIABLE INVESTIGATION
-================================================================================
-
-1. TEMPORAL VARIABLE DISTRIBUTIONS
---------------------------------------------------
-Departure Month Distribution:
-  Month  1: 17,457 tickets ( 8.3%)
-  Month  2: 12,288 tickets ( 5.9%)
-  Month  3: 19,415 tickets ( 9.3%)
-  Month  4: 14,230 tickets ( 6.8%)
-  Month  5: 16,999 tickets ( 8.1%)
-  Month  6: 20,547 tickets ( 9.8%)
-  Month  7: 18,406 tickets ( 8.8%)
-  Month  8: 15,123 tickets ( 7.2%)
-  Month  9: 16,790 tickets ( 8.0%)
-  Month 10: 18,489 tickets ( 8.8%)
-  Month 11: 20,184 tickets ( 9.6%)
-  Month 12: 19,769 tickets ( 9.4%)
-
-Departure Season Distribution:
-    Fall: 55,463 tickets (26.4%)
-  Summer: 54,076 tickets (25.8%)
-  Spring: 50,644 tickets (24.2%)
-  Winter: 49,514 tickets (23.6%)
-
-2. PRICE VARIATION ANALYSIS
---------------------------------------------------
-Price Statistics by Month:
-Month  Mean Price   Std Dev    CV       Count   
---------------------------------------------------
-1      223.01       142.22     0.638    17457   
-2      231.15       147.84     0.640    12288   
-3      213.91       141.69     0.662    19415   
-4      234.17       148.50     0.634    14230   
-5      222.71       139.84     0.628    16999   
-6      255.21       153.96     0.603    20547   
-7      230.74       142.28     0.617    18406   
-8      239.10       153.20     0.641    15123   
-9      217.27       148.03     0.681    16790   
-10     215.05       152.64     0.710    18489   
-11     227.18       142.24     0.626    20184   
-12     249.57       145.39     0.583    19769   
-
-Price Statistics by Season:
-Season   Mean Price   Std Dev    CV       Count   
---------------------------------------------------
-Winter   235.64       145.37     0.617    49514   
-Spring   222.56       143.26     0.644    50644   
-Summer   242.37       150.24     0.620    54076   
-Fall     220.14       147.62     0.671    55463   
-
-3. QUANTITY VARIATION ANALYSIS
---------------------------------------------------
-Quantity Statistics by Month:
-Month  Mean Qty   Std Dev    CV      
-----------------------------------------
-1      2.30       1.91       0.834   
-2      2.24       1.97       0.876   
-3      2.59       2.28       0.880   
-4      2.37       1.97       0.833   
-5      2.24       1.98       0.886   
-6      2.51       2.26       0.902   
-7      2.07       1.70       0.822   
-8      2.21       1.99       0.900   
-9      2.15       1.84       0.857   
-10     2.20       1.86       0.846   
-11     2.48       2.13       0.859   
-12     3.05       2.57       0.841   
-
-Quantity Statistics by Season:
-Season   Mean Qty   Std Dev    CV      
-----------------------------------------
-Winter   2.58       2.24       0.868   
-Spring   2.41       2.10       0.873   
-Summer   2.28       2.02       0.887   
-Fall     2.29       1.96       0.859   
-
-4. CORRELATION ANALYSIS
---------------------------------------------------
-Correlation with Price (mean_net_ticket_price):
-  Month correlations:
-    month_1: -0.0146
-    month_2: 0.0018
-    month_3: -0.0352
-    month_4: 0.0074
-    month_5: -0.0150
-    month_6: 0.0563
-    month_7: 0.0013
-    month_8: 0.0170
-    month_9: -0.0258
-    month_10: -0.0319
-    month_11: -0.0065
-    month_12: 0.0427
-  Season correlations:
-    season_Fall: -0.0407
-    season_Spring: -0.0290
-    season_Summer: 0.0491
-    season_Winter: 0.0209
-
-Correlation with Quantity (num_seats_total):
-  Month correlations:
-    month_1: -0.0127
-    month_2: -0.0167
-    month_3: 0.0313
-    month_4: -0.0021
-    month_5: -0.0209
-    month_6: 0.0197
-    month_7: -0.0465
-    month_8: -0.0228
-    month_9: -0.0329
-    month_10: -0.0279
-    month_11: 0.0149
-    month_12: 0.1035
-  Season correlations:
-    season_Fall: -0.0282
-    season_Spring: 0.0067
-    season_Summer: -0.0302
-    season_Winter: 0.0537
-
-5. INSTRUMENTAL VARIABLE STRENGTH TESTING
---------------------------------------------------
-Month Instruments - First Stage F-stat: 139.62, R²: 0.0079
-Season Instruments - First Stage F-stat: 209.14, R²: 0.0040
-
-Instrument Strength Assessment:
-  Month dummies: Strong (F > 10 threshold)
-  Season dummies: Strong (F > 10 threshold)
-
-📊 Visualization saved as 'temporal_iv_analysis.png'
-
-6. RECOMMENDATION
---------------------------------------------------
-Price variation patterns:
-  Month-level CV variation: 0.0339
-  Season-level CV variation: 0.0249
-  Month dummies provide: More variation
-
-🎯 RECOMMENDATION: Use departure_season
-   Reason: adequate first-stage strength (209.14) with better economic interpretation
-
-============================================================
-FEATURE ENGINEERING: Creating New Features
-============================================================
-Created features. New shape: (209697, 16)
-New features: ['Business_x_NormCabin', 'departure_season', 'Individual_x_Premium', 'departure_is_weekend', 'Business_x_Premium', 'days_to_departure']
-
-============================================================
-FEATURE ENGINEERING: Encoding Categorical Variables
-============================================================
-Train_Number_All: One-hot encoded (15 categories)
-Customer_Cat: One-hot encoded (2 categories)
-departure_season: One-hot encoded (4 categories)
-Final encoded shape: (209697, 29)
-
 ============================================================
 VERIFYING DATA QUALITY
 ============================================================
@@ -227,38 +72,76 @@ num_seats_total: 43 unique values
 range: 1 to 66
 mean_net_ticket_price: 209688 unique values
 range: 1.278969082 to 7855.766106
+Dept_Date: 722 unique values
+range: 2018-06-01 00:00:00 to 2020-06-13 00:00:00
+Purchase_Date: 395 unique values
+range: 2018-06-01 00:00:00 to 2019-06-30 00:00:00
+Train_Number_All: 15 unique values
+range: A to O
 Culmulative_sales: 170 unique values
 range: 1 to 187
 isNormCabin: [ True False] total 2 unique values
 isReturn: [False  True] total 2 unique values
 isOneway: [False  True] total 2 unique values
-days_to_departure: 357 unique values
-range: 0 to 364
-departure_is_weekend: [False  True] total 2 unique values
-Business_x_Premium: [False  True] total 2 unique values
-Individual_x_Premium: [False  True] total 2 unique values
-Business_x_NormCabin: [ True False] total 2 unique values
-Train_Number_All_B: [False  True] total 2 unique values
-Train_Number_All_C: [False  True] total 2 unique values
-Train_Number_All_D: [False  True] total 2 unique values
-Train_Number_All_E: [False  True] total 2 unique values
-Train_Number_All_F: [False  True] total 2 unique values
-Train_Number_All_G: [False  True] total 2 unique values
-Train_Number_All_H: [False  True] total 2 unique values
-Train_Number_All_I: [False  True] total 2 unique values
-Train_Number_All_J: [False  True] total 2 unique values
-Train_Number_All_K: [False  True] total 2 unique values
-Train_Number_All_L: [False  True] total 2 unique values
-Train_Number_All_M: [False  True] total 2 unique values
-Train_Number_All_N: [False  True] total 2 unique values
-Train_Number_All_O: [False  True] total 2 unique values
-Customer_Cat_B: [False  True] total 2 unique values
-departure_season_Spring: [False  True] total 2 unique values
-departure_season_Summer: [False  True] total 2 unique values
-departure_season_Winter: [False  True] total 2 unique values
+Customer_Cat: ['A', 'B']
+Categories (2, object): ['A', 'B'] total 2 unique values
+range: A to B
+
+================================================================================
+📅 TEMPORAL INSTRUMENTAL VARIABLE INVESTIGATION
+================================================================================
+Correlation with Price (mean_net_ticket_price):
+
+Correlation with Quantity (num_seats_total):
+Month Instruments - First Stage F-stat: 139.62, R²: 0.0079
+Season Instruments - First Stage F-stat: 209.14, R²: 0.0040
+
+Instrument Strength Assessment:
+  Month dummies: Strong (F > 10 threshold)
+  Season dummies: Strong (F > 10 threshold)
+
+📊 Visualization saved as 'temporal_iv_analysis.png'
+
+6. RECOMMENDATION
+--------------------------------------------------
+
+🎯 RECOMMENDATION: Use departure_season
+   Reason: adequate first-stage strength (209.14) with better economic interpretation
 
 ============================================================
-ANALYZING TARGET VARIABLE FOR DEMAND ESTIMATION
+BOOKING SPECIFICATION COMPARISON FOR PRICE PREDICTION
+(Testing Instrument Strength)
+============================================================
+⚠️  Found same-day bookings (min: 0), using log(days + 1)
+Correlation (price, quantity): -0.19321217161923315
+Correlation (days_to_departure, quantity): 0.20409457767347985
+
+📊 DEMAND PREDICTION (num_seats_total):
+  Linear R²:            0.0417
+  Log R²:               0.0374 (+-0.0043)
+  Business-Quantile R²: 0.0272 (+-0.0144)
+  → Best specification: Linear
+
+📊 INSTRUMENT STRENGTH (PRICE PREDICTION):
+  Linear R²:            0.2600
+  Log R²:               0.4588 (+0.1988)
+  Business-Quantile R²: 0.3453 (+0.0852)
+  → Best specification: Log
+  → Log chosen for capturing diminishing booking horizon effects
+
+📊 Visualization saved as 'booking_specifications_comparison.png'
+
+📊 Visualization saved as 'booking_specifications_price_comparison.png'
+
+📊 CUSTOMER CATEGORY COMPARISON:
+Business travelers (A): 47,293 observations
+Leisure travelers (B): 162,404 observations
+Overall price-quantity correlation: -0.193
+✅ Customer comparison saved as 'customer_comparison.png'
+the comparation result for booking: {'demand': {'linear_r2': 0.0416545966357571, 'log_r2': 0.03736090352024524, 'behavioral_4cat_r2': 0.027205389796771118}, 'price': {'linear_r2': 0.26002272778338187, 'log_r2': 0.45881430740501716, 'behavioral_4cat_r2': 0.3452548505337675}}
+
+============================================================
+ANALYZING RIGHT SKEW VARIABLE FOR DEMAND ESTIMATION
 ============================================================
 
 📊 SUMMARY STATISTICS FOR DEMAND ESTIMATION
@@ -274,14 +157,19 @@ Log-Log Specification:
 ✅ Target analysis for both specifications completed!
 
 ============================================================
-UNIVARIATE ANALYSIS
+FEATURE ENGINEERING: Creating New Features
 ============================================================
-✅ Univariate analysis completed and result is saved in univariate_analysis.png!
+⚠️  Found same-day bookings (min: 0), using log(days + 1)
+Created features. New shape: (209697, 19)
+New features: ['Business_x_NormCabin', 'departure_is_weekend', 'departure_season', 'Individual_x_Premium', 'log_days_to_departure', 'Business_x_Premium']
 
 ============================================================
-BIVARIATE ANALYSIS
+FEATURE ENGINEERING: Encoding Categorical Variables
 ============================================================
-✅ Bivariate analysis completed and saved in correlation_analysis.png and categorical_correlation_analysis.png!
+Train_Number_All: One-hot encoded (15 categories)
+Customer_Cat: One-hot encoded (2 categories)
+departure_season: One-hot encoded (4 categories)
+Final encoded shape: (209697, 32)
 
 ================================================================================
 🎯 COMPREHENSIVE DEMAND FUNCTION ESTIMATION
@@ -292,34 +180,32 @@ BIVARIATE ANALYSIS
 ============================================================
 OLS DEMAND ESTIMATION - LINEAR
 ============================================================
-Using 10 demand shifters:
-  • Base shifters: ['days_to_departure', 'departure_is_weekend', 'isNormCabin', 'Customer_Cat_B']
+Using 26 demand shifters:
+  • Base shifters: ['log_days_to_departure', 'departure_is_weekend', 'isNormCabin', 'Customer_Cat_B']
   • Seasonal patterns: 3
+  • Train characteristics: 14
+  • Trip type shifters: ['isReturn', 'isOneway']
   • Interaction shifters: ['Business_x_Premium', 'Individual_x_Premium', 'Business_x_NormCabin']
-Data check: X shape (209697, 12), y shape (209697,)
-X dtypes: [dtype('float64') dtype('int64')]
-y dtype: float64
 Observations: 209,697
-R-squared: 0.0753
+R-squared: 0.0851
 
-Price Elasticity: -0.0866 (p-value: 4.0922e-83)
+Price Elasticity: -0.0762 (p-value: 3.5771e-53)
 ✅ Negative price elasticity
    → Inelastic demand
 
 ============================================================
 OLS DEMAND ESTIMATION - LOGLOG
 ============================================================
-Using 10 demand shifters:
-  • Base shifters: ['days_to_departure', 'departure_is_weekend', 'isNormCabin', 'Customer_Cat_B']
+Using 26 demand shifters:
+  • Base shifters: ['log_days_to_departure', 'departure_is_weekend', 'isNormCabin', 'Customer_Cat_B']
   • Seasonal patterns: 3
+  • Train characteristics: 14
+  • Trip type shifters: ['isReturn', 'isOneway']
   • Interaction shifters: ['Business_x_Premium', 'Individual_x_Premium', 'Business_x_NormCabin']
-Data check: X shape (209697, 12), y shape (209697,)
-X dtypes: [dtype('float64') dtype('int64')]
-y dtype: float64
 Observations: 209,697
-R-squared: 0.1155
+R-squared: 0.1372
 
-Price Elasticity: -0.1219 (p-value: 0.0000e+00)
+Price Elasticity: -0.2059 (p-value: 0.0000e+00)
 ✅ Negative price elasticity
    → Inelastic demand
 
@@ -332,10 +218,10 @@ INSTRUMENTS (first stage only): 18 variables
   • Seasonal instruments: 3 (main IV)
   • Supply-side instruments: 1
   • Route instruments: 14
-DEMAND SHIFTERS (both stages): 6 variables
+DEMAND SHIFTERS (both stages): 7 variables
   • Base shifters: ['days_to_departure', 'departure_is_weekend']
   • Interaction shifters: ['Business_x_Premium', 'Individual_x_Premium', 'Business_x_NormCabin']
-F-statistic: 1349.94 (p-value: 0.0000e+00)
+F-statistic: 1310.53 (p-value: 0.0000e+00)
 Instrument strength: strong
 
 🔹 2SLS ESTIMATION
@@ -343,36 +229,36 @@ Instrument strength: strong
 ============================================================
 2SLS DEMAND ESTIMATION - LINEAR
 ============================================================
-Using 18 instruments: 3 seasonal + 1 supply + 14 route
-Using 6 demand shifters (consistent with OLS)
-  • Base shifters: ['days_to_departure', 'departure_is_weekend']
+Using 15 instruments: 3 seasonal + 1 supply + 14 route
+Using 9 demand shifters (consistent with OLS)
+  • Base shifters: ['departure_season_Spring', 'departure_season_Summer', 'departure_season_Winter', 'log_days_to_departure', 'departure_is_weekend']
   • Customer segments: 1
   • Interaction shifters: ['Business_x_Premium', 'Individual_x_Premium', 'Business_x_NormCabin']
 Observations: 209,697
-Instruments (Z): ['departure_season_Spring', 'departure_season_Summer', 'departure_season_Winter', 'Culmulative_sales', 'Train_Number_All_B', 'Train_Number_All_C', 'Train_Number_All_D', 'Train_Number_All_E', 'Train_Number_All_F', 'Train_Number_All_G', 'Train_Number_All_H', 'Train_Number_All_I', 'Train_Number_All_J', 'Train_Number_All_K', 'Train_Number_All_L', 'Train_Number_All_M', 'Train_Number_All_N', 'Train_Number_All_O']
-Demand shifters (W): ['days_to_departure', 'departure_is_weekend', 'Customer_Cat_B', 'Business_x_Premium', 'Individual_x_Premium', 'Business_x_NormCabin']
+Instruments (Z): ['Culmulative_sales', 'Train_Number_All_B', 'Train_Number_All_C', 'Train_Number_All_D', 'Train_Number_All_E', 'Train_Number_All_F', 'Train_Number_All_G', 'Train_Number_All_H', 'Train_Number_All_I', 'Train_Number_All_J', 'Train_Number_All_K', 'Train_Number_All_L', 'Train_Number_All_M', 'Train_Number_All_N', 'Train_Number_All_O']
+Demand shifters (W): ['departure_season_Spring', 'departure_season_Summer', 'departure_season_Winter', 'log_days_to_departure', 'departure_is_weekend', 'Customer_Cat_B', 'Business_x_Premium', 'Individual_x_Premium', 'Business_x_NormCabin']
 Endogenous variable: mean_net_ticket_price
-R-squared: -0.3120
+R-squared: -0.3558
 
-Price Elasticity: -1.3971 (p-value: 0.0000e+00)
+Price Elasticity: -1.6106 (p-value: 0.0000e+00)
 ✅ Negative price elasticity
    → Elastic demand
 
 ============================================================
 2SLS DEMAND ESTIMATION - LOGLOG
 ============================================================
-Using 18 instruments: 3 seasonal + 1 supply + 14 route
-Using 6 demand shifters (consistent with OLS)
-  • Base shifters: ['days_to_departure', 'departure_is_weekend']
+Using 15 instruments: 3 seasonal + 1 supply + 14 route
+Using 9 demand shifters (consistent with OLS)
+  • Base shifters: ['departure_season_Spring', 'departure_season_Summer', 'departure_season_Winter', 'log_days_to_departure', 'departure_is_weekend']
   • Customer segments: 1
   • Interaction shifters: ['Business_x_Premium', 'Individual_x_Premium', 'Business_x_NormCabin']
 Observations: 209,697
-Instruments (Z): ['departure_season_Spring', 'departure_season_Summer', 'departure_season_Winter', 'Culmulative_sales', 'Train_Number_All_B', 'Train_Number_All_C', 'Train_Number_All_D', 'Train_Number_All_E', 'Train_Number_All_F', 'Train_Number_All_G', 'Train_Number_All_H', 'Train_Number_All_I', 'Train_Number_All_J', 'Train_Number_All_K', 'Train_Number_All_L', 'Train_Number_All_M', 'Train_Number_All_N', 'Train_Number_All_O']
-Demand shifters (W): ['days_to_departure', 'departure_is_weekend', 'Customer_Cat_B', 'Business_x_Premium', 'Individual_x_Premium', 'Business_x_NormCabin']
+Instruments (Z): ['Culmulative_sales', 'Train_Number_All_B', 'Train_Number_All_C', 'Train_Number_All_D', 'Train_Number_All_E', 'Train_Number_All_F', 'Train_Number_All_G', 'Train_Number_All_H', 'Train_Number_All_I', 'Train_Number_All_J', 'Train_Number_All_K', 'Train_Number_All_L', 'Train_Number_All_M', 'Train_Number_All_N', 'Train_Number_All_O']
+Demand shifters (W): ['departure_season_Spring', 'departure_season_Summer', 'departure_season_Winter', 'log_days_to_departure', 'departure_is_weekend', 'Customer_Cat_B', 'Business_x_Premium', 'Individual_x_Premium', 'Business_x_NormCabin']
 Endogenous variable: log_price
-R-squared: -0.0372
+R-squared: -0.0341
 
-Price Elasticity: -0.5875 (p-value: 0.0000e+00)
+Price Elasticity: -0.9627 (p-value: 0.0000e+00)
 ✅ Negative price elasticity
    → Inelastic demand
 
@@ -383,19 +269,19 @@ ENDOGENEITY TEST - LINEAR
 ============================================================
 
 Coefficient comparison:
-  OLS:  -0.000897 (SE: 0.000046)
-  2SLS: -0.014468 (SE: 0.000170)
-  Difference: 0.013571
+  OLS:  -0.000789 (SE: 0.000051)
+  2SLS: -0.016679 (SE: 0.000205)
+  Difference: 0.015890
 
 Hausman test:
-  Test statistic: 6863.4011
+  Test statistic: 6416.9428
   P-value: 0.0000
-🔍 REJECT H0: Endogeneity detected (prefer 2SLS)
+🔍 REJECT H0: Endogeneity detected (prefer 2SLS)xwx
 
 Elasticity comparison:
-  OLS elasticity:  -0.0866
-  2SLS elasticity: -1.3971
-  Absolute difference: 1.3105
+  OLS elasticity:  -0.0762
+  2SLS elasticity: -1.6106
+  Absolute difference: 1.5344
 ⚠️  Large elasticity difference - endogeneity may be economically significant
 
 ============================================================
@@ -403,19 +289,19 @@ ENDOGENEITY TEST - LOGLOG
 ============================================================
 
 Coefficient comparison:
-  OLS:  -0.121949 (SE: 0.002526)
-  2SLS: -0.587471 (SE: 0.006131)
-  Difference: 0.465522
+  OLS:  -0.205949 (SE: 0.003968)
+  2SLS: -0.962656 (SE: 0.010376)
+  Difference: 0.756708
 
 Hausman test:
-  Test statistic: 6944.0612
+  Test statistic: 6230.2199
   P-value: 0.0000
 🔍 REJECT H0: Endogeneity detected (prefer 2SLS)
 
 Elasticity comparison:
-  OLS elasticity:  -0.1219
-  2SLS elasticity: -0.5875
-  Absolute difference: 0.4655
+  OLS elasticity:  -0.2059
+  2SLS elasticity: -0.9627
+  Absolute difference: 0.7567
 ⚠️  Large elasticity difference - endogeneity may be economically significant
 
 ================================================================================
@@ -425,18 +311,18 @@ Elasticity comparison:
 Model Comparison:
 Specification Method Elasticity R²       Reasonable  
 ------------------------------------------------------------
-linear       OLS     -0.0866 0.0753  ✅ Yes
-linear       2SLS    -1.3971 -0.3120  ✅ Yes
-loglog       OLS     -0.1219 0.1155  ✅ Yes
-loglog       2SLS    -0.5875 -0.0372  ✅ Yes
+linear       OLS     -0.0762 0.0851  ✅ Yes
+linear       2SLS    -1.6106 -0.3558  ✅ Yes
+loglog       OLS     -0.2059 0.1372  ✅ Yes
+loglog       2SLS    -0.9627 -0.0341  ✅ Yes
 
 🏆 RECOMMENDED MODEL:
-   Specification: LINEAR
+   Specification: LOGLOG
    Method: 2SLS
-   Elasticity: -1.3971
-   R-squared: -0.3120
-   Demand Type: Elastic
-   Economic Impact: 1% price ↑ → 139.7% quantity ↓
+   Elasticity: -0.9627
+   R-squared: -0.0341
+   Demand Type: Inelastic
+   Economic Impact: 1% price ↑ → 96.3% quantity ↓
 
 ⚠️  Endogeneity test suggests using 2SLS for linear specification
 
@@ -444,27 +330,21 @@ loglog       2SLS    -0.5875 -0.0372  ✅ Yes
 
 🏁 DEMAND ANALYSIS SUMMARY:
    Dataset: 209,697 observations
-   Instrument strength: strong (F=1349.94)
-   OLS Linear elasticity: -0.0866
-   OLS Log-log elasticity: -0.1219
-   2SLS Linear elasticity: -1.3971
-   2SLS Log-log elasticity: -0.5875
+   Instrument strength: strong (F=1310.53)
+   OLS Linear elasticity: -0.0762
+   OLS Log-log elasticity: -0.2059
+   2SLS Linear elasticity: -1.6106
+   2SLS Log-log elasticity: -0.9627
 
-🎯 FINAL RECOMMENDATION: LINEAR 2SLS
-   Price elasticity of demand: -1.3971
+🎯 FINAL RECOMMENDATION: LOGLOG 2SLS
+   Price elasticity of demand: -0.9627
 
 ✅ Analysis completed successfully!
 
 📋 FINAL ANALYSIS RESULTS:
 Analysis complete with 209,697 observations
 
-🎯 TEMPORAL INSTRUMENTAL VARIABLE RECOMMENDATION:
-  Use: departure_season
-  Reason: adequate first-stage strength (209.14) with better economic interpretation
-  Month F-stat: 139.62
-  Season F-stat: 209.14
-
 Demand Elasticities:
-  Linear elasticity: -0.08657285317693356
-  Log-log elasticity: -0.12194914429270948
-  Instrument strength: strong (F=1349.94)
+  Linear elasticity: -0.0761779079874247
+  Log-log elasticity: -0.20594875855791073
+  Instrument strength: strong (F=1310.53)

@@ -1,0 +1,12 @@
+__pycache__
+economy.log
+economy.aux
+economy.out
+economy.toc
+economy.bbl
+economy.synctex.gz
+economy.fls
+economy.fdb_latexmk
+economy.synctex
+.claude/*
+economy.pdf

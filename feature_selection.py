@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import r2_score
+import statsmodels.api as sm
 
 def plot_correlation_heatmap(df, columns=None, filename="correlation_heatmap.png"):
     """
@@ -13,16 +14,17 @@ def plot_correlation_heatmap(df, columns=None, filename="correlation_heatmap.png
         corr = df[columns].corr()
     else:
         corr = df.corr()
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", center=0)
-    plt.title("Correlation Heatmap")
+    plt.figure(figsize=(12, 4))
+    sns.heatmap(corr, annot=True, fmt=".2f", cmap="Greys", center=0, square=False, 
+                annot_kws={'size': 12}, linewidths=0.5, linecolor='black')
+    plt.title("Correlation Heatmap", fontsize=14, fontweight='bold')
     plt.tight_layout()
-    plt.savefig(filename, dpi=200)
+    plt.savefig(filename, dpi=500, bbox_inches='tight', 
+                facecolor='white', edgecolor='none')
     plt.close()
-    print(f"✅ Correlation heatmap saved as {filename}")
 
 def compare_days_to_departure_specifications(df):
-    """Compare linear, quadratic, and business-quantile categorical booking specifications for demand and price prediction"""
+    """Compare linear, log, and business-quantile categorical booking specifications for demand and price prediction"""
 
     print(f"\n{'='*60}")
     print("BOOKING SPECIFICATION COMPARISON FOR PRICE PREDICTION")
@@ -33,6 +35,14 @@ def compare_days_to_departure_specifications(df):
     df_temp = df.copy()
     df_temp['days_to_departure'] = (df_temp['Dept_Date'] - df_temp['Purchase_Date']).dt.days
     df_temp = df_temp[df_temp['days_to_departure'] >= 0]
+    
+    # Create log transformation for days_to_departure
+    min_days = df_temp['days_to_departure'].min()
+    if min_days <= 0:
+        print(f"⚠️  Found same-day bookings (min: {min_days}), using log(days + 1)")
+        df_temp['log_days_to_departure'] = np.log1p(df_temp['days_to_departure'])
+    else:
+        df_temp['log_days_to_departure'] = np.log(df_temp['days_to_departure'])
     
     plot_correlation_heatmap(df_temp, 
                              columns=['mean_net_ticket_price', 'num_seats_total', 'days_to_departure'],
@@ -50,6 +60,7 @@ def compare_days_to_departure_specifications(df):
     y_demand = df_temp['num_seats_total'].values
     y_price = df_temp['mean_net_ticket_price'].values
     days = df_temp['days_to_departure'].values
+    log_days = df_temp['log_days_to_departure'].values
 
     # Create 4-category business-quantile variable based on typical booking behavior
     # Quantiles chosen to reflect business travel patterns: last-minute, rush, standard, early planning
@@ -67,11 +78,11 @@ def compare_days_to_departure_specifications(df):
     linear_coef = np.linalg.lstsq(X_linear, y_demand, rcond=None)[0]
     linear_pred = X_linear @ linear_coef
     linear_r2 = r2_score(y_demand, linear_pred)
-    # Quadratic
-    X_quad = np.column_stack([np.ones(len(days)), days, days**2])
-    quad_coef = np.linalg.lstsq(X_quad, y_demand, rcond=None)[0]
-    quad_pred = X_quad @ quad_coef
-    quad_r2 = r2_score(y_demand, quad_pred)
+    # Log
+    X_log = np.column_stack([np.ones(len(log_days)), log_days])
+    log_coef = np.linalg.lstsq(X_log, y_demand, rcond=None)[0]
+    log_pred = X_log @ log_coef
+    log_r2 = r2_score(y_demand, log_pred)
     # Categorical
     X_cat = np.column_stack([np.ones(len(y_demand)), booking_dummies.values])
     cat_coef = np.linalg.lstsq(X_cat, y_demand, rcond=None)[0]
@@ -84,11 +95,12 @@ def compare_days_to_departure_specifications(df):
     linear_coef_p = np.linalg.lstsq(X_linear_p, y_price, rcond=None)[0]
     linear_pred_p = X_linear_p @ linear_coef_p
     linear_r2_p = r2_score(y_price, linear_pred_p)
-    # Quadratic
-    X_quad_p = np.column_stack([np.ones(len(days)), days, days**2])
-    quad_coef_p = np.linalg.lstsq(X_quad_p, y_price, rcond=None)[0]
-    quad_pred_p = X_quad_p @ quad_coef_p
-    quad_r2_p = r2_score(y_price, quad_pred_p)
+    # Log
+    X_log_p = np.column_stack([np.ones(len(log_days)), log_days])
+    log_coef_p = np.linalg.lstsq(X_log_p, y_price, rcond=None)[0]
+    log_pred_p = X_log_p @ log_coef_p
+    log_r2_p = r2_score(y_price, log_pred_p)
+
     # Categorical
     X_cat_p = np.column_stack([np.ones(len(y_price)), booking_dummies.values])
     cat_coef_p = np.linalg.lstsq(X_cat_p, y_price, rcond=None)[0]
@@ -98,18 +110,18 @@ def compare_days_to_departure_specifications(df):
     # Print results
     print(f"\n📊 DEMAND PREDICTION (num_seats_total):")
     print(f"  Linear R²:            {linear_r2:.4f}")
-    print(f"  Quadratic R²:         {quad_r2:.4f} (+{quad_r2-linear_r2:.4f})")
+    print(f"  Log R²:               {log_r2:.4f} (+{log_r2-linear_r2:.4f})")
     print(f"  Business-Quantile R²: {cat_r2:.4f} (+{cat_r2-linear_r2:.4f})")
-    best_demand = 'Quadratic' if quad_r2 > max(linear_r2, cat_r2) else 'Business-Quantile' if cat_r2 > linear_r2 else 'Linear'
+    best_demand = 'Log' if log_r2 > max(linear_r2, cat_r2) else 'Business-Quantile' if cat_r2 > linear_r2 else 'Linear'
     print(f"  → Best specification: {best_demand}")
 
     print(f"\n📊 INSTRUMENT STRENGTH (PRICE PREDICTION):")
     print(f"  Linear R²:            {linear_r2_p:.4f}")
-    print(f"  Quadratic R²:         {quad_r2_p:.4f} (+{quad_r2_p-linear_r2_p:.4f})")
+    print(f"  Log R²:               {log_r2_p:.4f} (+{log_r2_p-linear_r2_p:.4f})")
     print(f"  Business-Quantile R²: {cat_r2_p:.4f} (+{cat_r2_p-linear_r2_p:.4f})")
-    best_price = 'Quadratic' if quad_r2_p > max(linear_r2_p, cat_r2_p) else 'Business-Quantile' if cat_r2_p > linear_r2_p else 'Linear'
+    best_price = 'Log' if log_r2_p > max(linear_r2_p, cat_r2_p) else 'Business-Quantile' if cat_r2_p > linear_r2_p else 'Linear'
     print(f"  → Best specification: {best_price}")
-    print(f"  → Quadratic chosen for capturing non-linear booking behavior")
+    print(f"  → Log chosen for capturing diminishing booking horizon effects")
 
     # --- Plot for demand prediction ---
     plt.figure(figsize=(15, 5))
@@ -131,8 +143,8 @@ def compare_days_to_departure_specifications(df):
     
     # Plot model predictions
     sort_idx = np.argsort(days)
-    plt.plot(days[sort_idx], linear_pred[sort_idx], 'b-', linewidth=3, label=f'Linear (R²={linear_r2:.3f})')
-    plt.plot(days[sort_idx], quad_pred[sort_idx], 'r-', linewidth=3, label=f'Quadratic (R²={quad_r2:.3f})')
+    plt.plot(days[sort_idx], linear_pred[sort_idx], color='black', linewidth=3, label=f'Linear (R²={linear_r2:.3f})')
+    plt.plot(days[sort_idx], log_pred[sort_idx], color='gray', linewidth=3, linestyle='--', label=f'Log (R²={log_r2:.3f})')
     
     # Set axis limits to focus on main data distribution
     plt.xlim(max(0, days_p2 - 10), min(days_p98 + 10, days.max()))
@@ -146,11 +158,11 @@ def compare_days_to_departure_specifications(df):
 
     # Panel 2: R² Performance Comparison
     plt.subplot(1, 2, 2)
-    models = ['Linear', 'Quadratic', 'Business-Quantile']
-    r2_values = [linear_r2, quad_r2, cat_r2]
-    colors = ['skyblue', 'lightcoral', 'lightgreen']
+    models = ['Linear', 'Log', 'Business-Quantile']
+    r2_values = [linear_r2, log_r2, cat_r2]
+    colors = ['lightgray', 'gray', 'darkgray']
     best_idx = np.argmax(r2_values)
-    best_colors = [c if i != best_idx else 'gold' for i, c in enumerate(colors)]
+    best_colors = [c if i != best_idx else 'black' for i, c in enumerate(colors)]
     bars = plt.bar(models, r2_values, color=best_colors, alpha=0.8, edgecolor='black')
     for bar, r2 in zip(bars, r2_values):
         plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.001,
@@ -161,11 +173,11 @@ def compare_days_to_departure_specifications(df):
     plt.annotate(f'Best: {models[best_idx]}', xy=(best_idx, r2_values[best_idx]), 
                 xytext=(best_idx, r2_values[best_idx] + max(r2_values) * 0.08),
                 ha='center', fontsize=10, fontweight='bold',
-                arrowprops=dict(arrowstyle='->', color='red', lw=2))
+                arrowprops=dict(arrowstyle='->', color='black', lw=2))
     plt.grid(True, alpha=0.3, axis='y')
 
     plt.tight_layout()
-    plt.savefig('booking_specifications_comparison.png', dpi=200, bbox_inches='tight')
+    plt.savefig('booking_specifications_comparison.png', dpi=400, bbox_inches='tight')
     print(f"\n📊 Visualization saved as 'booking_specifications_comparison.png'")
 
     # --- Plot for price prediction (instrument strength) ---
@@ -183,8 +195,8 @@ def compare_days_to_departure_specifications(df):
     
     # Plot model predictions
     sort_idx = np.argsort(days)
-    plt.plot(days[sort_idx], linear_pred_p[sort_idx], 'b-', linewidth=3, label=f'Linear (R²={linear_r2_p:.3f})')
-    plt.plot(days[sort_idx], quad_pred_p[sort_idx], 'r-', linewidth=3, label=f'Quadratic (R²={quad_r2_p:.3f})')
+    plt.plot(days[sort_idx], linear_pred_p[sort_idx], color='black', linewidth=3, label=f'Linear (R²={linear_r2_p:.3f})')
+    plt.plot(days[sort_idx], log_pred_p[sort_idx], color='gray', linewidth=3, linestyle='--', label=f'Log (R²={log_r2_p:.3f})')
     
     # Set axis limits to focus on main data distribution
     plt.xlim(max(0, days_p2 - 10), min(days_p98 + 10, days.max()))
@@ -198,11 +210,11 @@ def compare_days_to_departure_specifications(df):
 
     # Panel 2: R² Performance Comparison
     plt.subplot(1, 2, 2)
-    models = ['Linear', 'Quadratic', 'Business-Quantile']
-    r2_values = [linear_r2_p, quad_r2_p, cat_r2_p]
-    colors = ['skyblue', 'lightcoral', 'lightgreen']
+    models = ['Linear', 'Log', 'Business-Quantile']
+    r2_values = [linear_r2_p, log_r2_p, cat_r2_p]
+    colors = ['lightgray', 'gray', 'darkgray']
     best_idx = np.argmax(r2_values)
-    best_colors = [c if i != best_idx else 'gold' for i, c in enumerate(colors)]
+    best_colors = [c if i != best_idx else 'black' for i, c in enumerate(colors)]
     bars = plt.bar(models, r2_values, color=best_colors, alpha=0.8, edgecolor='black')
     for bar, r2 in zip(bars, r2_values):
         plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.001,
@@ -213,23 +225,23 @@ def compare_days_to_departure_specifications(df):
     plt.annotate(f'Best: {models[best_idx]}', xy=(best_idx, r2_values[best_idx]), 
                 xytext=(best_idx, r2_values[best_idx] + max(r2_values) * 0.08),
                 ha='center', fontsize=10, fontweight='bold',
-                arrowprops=dict(arrowstyle='->', color='red', lw=2))
+                arrowprops=dict(arrowstyle='->', color='black', lw=2))
     plt.grid(True, alpha=0.3, axis='y')
 
     plt.tight_layout()
-    plt.savefig('booking_specifications_price_comparison.png', dpi=200, bbox_inches='tight')
+    plt.savefig('booking_specifications_price_comparison.png', dpi=400, bbox_inches='tight')
     print(f"\n📊 Visualization saved as 'booking_specifications_price_comparison.png'")
 
     # Return results for both demand and price
     return {
         'demand': {
             'linear_r2': linear_r2,
-            'quadratic_r2': quad_r2,
+            'log_r2': log_r2,
             'behavioral_4cat_r2': cat_r2
         },
         'price': {
             'linear_r2': linear_r2_p,
-            'quadratic_r2': quad_r2_p,
+            'log_r2': log_r2_p,
             'behavioral_4cat_r2': cat_r2_p
         }
     }
@@ -255,11 +267,6 @@ def investigate_season_month_instruments(df):
     print("📅 TEMPORAL INSTRUMENTAL VARIABLE INVESTIGATION")
     print("="*80)
     
-    # use Dept_Date to create departure_month and departure_season
-    if 'Dept_Date' not in df.columns:
-        print("❌ 'Dept_Date' column not found in DataFrame.")
-        return None
-    
     df_temp = df.copy()
     
     # Ensure datetime conversion before using .dt accessor
@@ -272,113 +279,31 @@ def investigate_season_month_instruments(df):
     # Create season variable
     df_temp['departure_season'] = df_temp['departure_month'].apply(get_season)
     
-    print("\n1. TEMPORAL VARIABLE DISTRIBUTIONS")
-    print("-" * 50)
-    
-    # Month distribution
-    print("Departure Month Distribution:")
-    month_counts = df_temp['departure_month'].value_counts().sort_index()
-    for month, count in month_counts.items():
-        pct = (count / len(df_temp)) * 100
-        print(f"  Month {month:2d}: {count:>6,} tickets ({pct:4.1f}%)")
-    
-    # Season distribution  
-    print("\nDeparture Season Distribution:")
-    season_counts = df_temp['departure_season'].value_counts()
-    for season, count in season_counts.items():
-        pct = (count / len(df_temp)) * 100
-        print(f"  {season:>6}: {count:>6,} tickets ({pct:4.1f}%)")
-    
-    print("\n2. PRICE VARIATION ANALYSIS")
-    print("-" * 50)
-    
     # Price variation by month
     price_by_month = df_temp.groupby('departure_month')['mean_net_ticket_price'].agg(['mean', 'std', 'count'])
-    print("Price Statistics by Month:")
-    print(f"{'Month':<6} {'Mean Price':<12} {'Std Dev':<10} {'CV':<8} {'Count':<8}")
-    print("-" * 50)
-    for month in sorted(price_by_month.index):
-        mean_p = price_by_month.loc[month, 'mean']
-        std_p = price_by_month.loc[month, 'std']
-        count_p = price_by_month.loc[month, 'count']
-        cv = std_p / mean_p if mean_p > 0 else 0
-        print(f"{month:<6} {mean_p:<12.2f} {std_p:<10.2f} {cv:<8.3f} {count_p:<8}")
     
     # Price variation by season
     price_by_season = df_temp.groupby('departure_season')['mean_net_ticket_price'].agg(['mean', 'std', 'count'])
-    print("\nPrice Statistics by Season:")
-    print(f"{'Season':<8} {'Mean Price':<12} {'Std Dev':<10} {'CV':<8} {'Count':<8}")
-    print("-" * 50)
-    for season in ['Winter', 'Spring', 'Summer', 'Fall']:
-        if season in price_by_season.index:
-            mean_p = price_by_season.loc[season, 'mean']
-            std_p = price_by_season.loc[season, 'std']
-            count_p = price_by_season.loc[season, 'count']
-            cv = std_p / mean_p if mean_p > 0 else 0
-            print(f"{season:<8} {mean_p:<12.2f} {std_p:<10.2f} {cv:<8.3f} {count_p:<8}")
-    
-    print("\n3. QUANTITY VARIATION ANALYSIS")
-
-    print("-" * 50)
     
     # Quantity variation by month
     qty_by_month = df_temp.groupby('departure_month')['num_seats_total'].agg(['mean', 'std', 'count'])
-    print("Quantity Statistics by Month:")
-    print(f"{'Month':<6} {'Mean Qty':<10} {'Std Dev':<10} {'CV':<8}")
-    print("-" * 40)
-    for month in sorted(qty_by_month.index):
-        mean_q = qty_by_month.loc[month, 'mean']
-        std_q = qty_by_month.loc[month, 'std']
-        cv = std_q / mean_q if mean_q > 0 else 0
-        print(f"{month:<6} {mean_q:<10.2f} {std_q:<10.2f} {cv:<8.3f}")
     
     # Quantity variation by season
     qty_by_season = df_temp.groupby('departure_season')['num_seats_total'].agg(['mean', 'std', 'count'])
-    print("\nQuantity Statistics by Season:")
-    print(f"{'Season':<8} {'Mean Qty':<10} {'Std Dev':<10} {'CV':<8}")
-    print("-" * 40)
-    for season in ['Winter', 'Spring', 'Summer', 'Fall']:
-        if season in qty_by_season.index:
-            mean_q = qty_by_season.loc[season, 'mean']
-            std_q = qty_by_season.loc[season, 'std']
-            cv = std_q / mean_q if mean_q > 0 else 0
-            print(f"{season:<8} {mean_q:<10.2f} {std_q:<10.2f} {cv:<8.3f}")
     
     # Create dummy variables for analysis
     month_dummies = pd.get_dummies(df_temp['departure_month'], prefix='month')
     season_dummies = pd.get_dummies(df_temp['departure_season'], prefix='season')
-    
-    print("\n4. CORRELATION ANALYSIS")
-    print("-" * 50)
     
     # Correlations with price
     print("Correlation with Price (mean_net_ticket_price):")
     month_price_corrs = df_temp[['mean_net_ticket_price']].join(month_dummies).corr()['mean_net_ticket_price'][1:]
     season_price_corrs = df_temp[['mean_net_ticket_price']].join(season_dummies).corr()['mean_net_ticket_price'][1:]
     
-    print("  Month correlations:")
-    for col, corr in month_price_corrs.items():
-        print(f"    {col}: {corr:.4f}")
-    
-    print("  Season correlations:")
-    for col, corr in season_price_corrs.items():
-        print(f"    {col}: {corr:.4f}")
-    
     # Correlations with quantity
     print("\nCorrelation with Quantity (num_seats_total):")
     month_qty_corrs = df_temp[['num_seats_total']].join(month_dummies).corr()['num_seats_total'][1:]
     season_qty_corrs = df_temp[['num_seats_total']].join(season_dummies).corr()['num_seats_total'][1:]
-    
-    print("  Month correlations:")
-    for col, corr in month_qty_corrs.items():
-        print(f"    {col}: {corr:.4f}")
-    
-    print("  Season correlations:")
-    for col, corr in season_qty_corrs.items():
-        print(f"    {col}: {corr:.4f}")
-    
-    print("\n5. INSTRUMENTAL VARIABLE STRENGTH TESTING")
-    print("-" * 50)
     
     # First-stage regressions
     y_price = df_temp['mean_net_ticket_price'].astype(float)
@@ -405,155 +330,87 @@ def investigate_season_month_instruments(df):
     print(f"  Month dummies: {month_strength} (F > 10 threshold)")
     print(f"  Season dummies: {season_strength} (F > 10 threshold)")
     
-    # Create comprehensive visualization
-    fig, axes = plt.subplots(2, 4, figsize=(24, 12))
-    fig.suptitle('Temporal Instrumental Variable Analysis', fontsize=16, fontweight='bold')
+    # Create simple temporal patterns visualization
+    fig, ((ax1, ax2, ax3), (ax4, ax5, ax6)) = plt.subplots(2, 3, figsize=(18, 12), dpi=150)
+    fig.suptitle('Temporal Patterns Analysis', fontsize=16, fontweight='bold')
     
-    # Panel 1: Time series trends
-    ax1 = axes[0, 0]
-    monthly_avg = df_temp.groupby('departure_month').agg({
-        'mean_net_ticket_price': 'mean',
-        'num_seats_total': 'mean'
-    })
-    ax1_twin = ax1.twinx()
+    # Panel 1: Seasonal price patterns (simple bar chart)
+    seasonal_price = df_temp.groupby('departure_season')['mean_net_ticket_price'].mean()
+    seasonal_price.plot(kind='bar', ax=ax1, color='lightgray', edgecolor='black')
+    ax1.set_title('Average Price by Season', fontsize=14, fontweight='bold')
+    ax1.set_ylabel('Mean Price', fontsize=12)
+    ax1.tick_params(axis='x', rotation=0, labelsize=11)
+    ax1.tick_params(axis='y', labelsize=11)
     
-    line1 = ax1.plot(monthly_avg.index, monthly_avg['mean_net_ticket_price'], 'b-o', label='Price')
-    line2 = ax1_twin.plot(monthly_avg.index, monthly_avg['num_seats_total'], 'r-s', label='Quantity')
+    # Panel 2: Seasonal demand patterns
+    seasonal_demand = df_temp.groupby('departure_season')['num_seats_total'].mean()
+    seasonal_demand.plot(kind='bar', ax=ax2, color='lightgray', edgecolor='black')
+    ax2.set_title('Average Demand by Season', fontsize=14, fontweight='bold')
+    ax2.set_ylabel('Mean Seats Sold', fontsize=12)
+    ax2.tick_params(axis='x', rotation=0, labelsize=11)
+    ax2.tick_params(axis='y', labelsize=11)
     
-    ax1.set_xlabel('Month')
-    ax1.set_ylabel('Price', color='b')
-    ax1_twin.set_ylabel('Quantity', color='r')
-    ax1.set_title('Monthly Price and Quantity Trends')
-    ax1.grid(True, alpha=0.3)
+    # Panel 3: Monthly price trends (simplified)
+    month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    monthly_price = df_temp.groupby('departure_month')['mean_net_ticket_price'].mean()
+    monthly_price.index = [month_names[i-1] for i in monthly_price.index]
+    monthly_price.plot(kind='bar', ax=ax3, color='dimgray', edgecolor='black')
+    ax3.set_title('Monthly Price Patterns', fontsize=14, fontweight='bold')
+    ax3.set_ylabel('Mean Price', fontsize=12)
+    ax3.tick_params(axis='x', rotation=45, labelsize=10)
+    ax3.tick_params(axis='y', labelsize=11)
     
-    # Panel 2: Box plots
-    ax2 = axes[0, 1]
-    season_order = ['Winter', 'Spring', 'Summer', 'Fall']
-    df_temp['departure_season'] = pd.Categorical(df_temp['departure_season'], categories=season_order, ordered=True)
-    sns.boxplot(data=df_temp, x='departure_season', y='mean_net_ticket_price', ax=ax2)
-    ax2.set_title('Price Distribution by Season')
-    ax2.set_xlabel('Season')
-    ax2.set_ylabel('Price')
+    # Panel 4: Booking horizon analysis (if days_to_departure exists)
+    if 'days_to_departure' not in df_temp.columns:
+        if 'Purchase_Date' in df_temp.columns:
+            df_temp['days_to_departure'] = (df_temp['Dept_Date'] - pd.to_datetime(df_temp['Purchase_Date'])).dt.days
     
-    # Panel 3: Month Correlation Matrix
-    ax3 = axes[0, 2]
-    month_corr_data = pd.concat([
-        df_temp[['mean_net_ticket_price', 'num_seats_total']],
-        month_dummies
-    ], axis=1)
+    # Create booking windows
+    df_temp['booking_window'] = pd.cut(df_temp['days_to_departure'], 
+                                        bins=[0, 7, 30, 60, float('inf')],
+                                        labels=['Last-minute (<7)', 'Optimal (7-30)', 'Advanced (30-60)', 'Early (60+)'])
+
+    horizon_demand = df_temp.groupby('booking_window')['num_seats_total'].mean()
+    horizon_demand.plot(kind='bar', ax=ax4, color='dimgray', edgecolor='black')
+    ax4.set_title('Demand by Booking Window', fontsize=14, fontweight='bold')
+    ax4.set_ylabel('Mean Demand', fontsize=12)
+    ax4.tick_params(axis='x', rotation=45, labelsize=10)
+    ax4.tick_params(axis='y', labelsize=11)
     
-    month_corr_matrix = month_corr_data.corr()
-    # Only show correlations with price and quantity
-    month_corr_subset = month_corr_matrix.loc[
-        month_corr_matrix.index.str.startswith('month_'),
-        ['mean_net_ticket_price', 'num_seats_total']
-    ]
+    # Panel 5: Booking horizon analysis for price
+    horizon_price = df_temp.groupby('booking_window')['mean_net_ticket_price'].mean()
+    horizon_price.plot(kind='bar', ax=ax5, color='dimgray', edgecolor='black')
+    ax5.set_title('Price by Booking Window', fontsize=14, fontweight='bold')
+    ax5.set_ylabel('Mean Price', fontsize=12)
+    ax5.tick_params(axis='x', rotation=45, labelsize=10)
+    ax5.tick_params(axis='y', labelsize=11)
     
-    sns.heatmap(month_corr_subset, annot=True, cmap='coolwarm', center=0, ax=ax3, 
-                fmt='.3f', cbar_kws={'shrink': 0.8})
-    ax3.set_title('Month Correlations\n(Price & Quantity)')
-    ax3.set_ylabel('Departure Month')
-    
-    # Panel 4: Season Correlation Matrix
-    ax4 = axes[0, 3]
-    season_corr_data = pd.concat([
-        df_temp[['mean_net_ticket_price', 'num_seats_total']],
-        season_dummies
-    ], axis=1)
-    
-    season_corr_matrix = season_corr_data.corr()
-    # Only show correlations with price and quantity
-    season_corr_subset = season_corr_matrix.loc[
-        season_corr_matrix.index.str.startswith('season_'),
-        ['mean_net_ticket_price', 'num_seats_total']
-    ]
-    
-    sns.heatmap(season_corr_subset, annot=True, cmap='coolwarm', center=0, ax=ax4, 
-                fmt='.3f', cbar_kws={'shrink': 0.8})
-    ax4.set_title('Season Correlations\n(Price & Quantity)')
-    ax4.set_ylabel('Departure Season')
-    
-    # Panel 5: First-stage regression comparison
-    ax5 = axes[1, 0]
-    fitted_month = model_month.fittedvalues
-    fitted_season = model_season.fittedvalues
-    
-    ax5.scatter(fitted_month, y_price, alpha=0.5, label=f'Month (R²={r2_month:.3f})', s=1)
-    ax5.scatter(fitted_season, y_price, alpha=0.5, label=f'Season (R²={r2_season:.3f})', s=1)
-    ax5.plot([y_price.min(), y_price.max()], [y_price.min(), y_price.max()], 'k--', alpha=0.8)
-    ax5.set_xlabel('Fitted Values')
-    ax5.set_ylabel('Actual Price')
-    ax5.set_title('First-Stage Regression Fit')
-    ax5.legend()
-    ax5.grid(True, alpha=0.3)
-    
-    # Panel 6: Monthly coefficient plots
-    ax6 = axes[1, 1]
-    month_coefs = model_month.params[1:]  # Exclude constant
-    month_ci = model_month.conf_int().iloc[1:]  # Exclude constant
-    
-    y_pos = np.arange(len(month_coefs))
-    ax6.errorbar(month_coefs.values, y_pos, 
-                xerr=[month_coefs.values - month_ci.iloc[:, 0].values,
-                      month_ci.iloc[:, 1].values - month_coefs.values],
-                fmt='o', capsize=5)
-    ax6.axvline(x=0, color='k', linestyle='--', alpha=0.5)
-    ax6.set_yticks(y_pos)
-    ax6.set_yticklabels([f'Month {i+2}' for i in range(len(month_coefs))])  # Starting from month 2 (month 1 is baseline)
-    ax6.set_xlabel('Coefficient')
-    ax6.set_title('Monthly Dummy Coefficients')
-    ax6.grid(True, alpha=0.3)
-    
-    # Panel 7: Season coefficient plots
-    ax7 = axes[1, 2]
-    season_coefs = model_season.params[1:]  # Exclude constant
-    season_ci = model_season.conf_int().iloc[1:]  # Exclude constant
-    
-    y_pos_season = np.arange(len(season_coefs))
-    ax7.errorbar(season_coefs.values, y_pos_season, 
-                xerr=[season_coefs.values - season_ci.iloc[:, 0].values,
-                      season_ci.iloc[:, 1].values - season_coefs.values],
-                fmt='s', capsize=5, color='orange')
-    ax7.axvline(x=0, color='k', linestyle='--', alpha=0.5)
-    ax7.set_yticks(y_pos_season)
-    ax7.set_yticklabels(season_coefs.index)
-    ax7.set_xlabel('Coefficient')
-    ax7.set_title('Season Dummy Coefficients')
-    ax7.grid(True, alpha=0.3)
-    
-    # Panel 8: Instrument strength summary
-    ax8 = axes[1, 3]
-    instruments = ['Month\nDummies', 'Season\nDummies']
+    instruments = ['Monthly\nDummies', 'Seasonal\nDummies']
     f_stats = [f_stat_month, f_stat_season]
-    colors = ['green' if f > 10 else 'red' for f in f_stats]
+    colors = ['lightgray' if f > 10 else 'dimgray' for f in f_stats]
     
-    bars = ax8.bar(instruments, f_stats, color=colors, alpha=0.7)
-    ax8.axhline(y=10, color='orange', linestyle='--', linewidth=2, label='F=10 threshold')
-    ax8.set_ylabel('F-statistic')
-    ax8.set_title('Instrument Strength Comparison')
-    ax8.legend()
-    
+    bars = ax6.bar(instruments, f_stats, color=colors, edgecolor='black', linewidth=1.5)
+    ax6.axhline(y=10, color='red', linestyle='--', linewidth=2, label='F=10 threshold')
+    ax6.set_ylabel('F-statistic', fontsize=14)
+    ax6.set_title('Instrument Strength Comparison', fontsize=16, fontweight='bold')
+    ax6.legend(fontsize=12)
+    ax6.tick_params(axis='x', labelsize=12)
+    ax6.tick_params(axis='y', labelsize=12)
+
     # Add F-stat values on bars
     for bar, f_val in zip(bars, f_stats):
         height = bar.get_height()
-        ax8.text(bar.get_x() + bar.get_width()/2., height + 0.5,
-                f'{f_val:.1f}', ha='center', va='bottom', fontweight='bold')
+        ax6.text(bar.get_x() + bar.get_width()/2., height + 5,
+                f'{f_val:.1f}', ha='center', va='bottom', fontweight='bold', fontsize=12)
     
     plt.tight_layout()
-    plt.savefig('temporal_iv_analysis.png', dpi=200, bbox_inches='tight')
+    plt.savefig('temporal_iv_analysis.png', dpi=800, bbox_inches='tight', 
+                facecolor='white', edgecolor='none')
     print(f"\n📊 Visualization saved as 'temporal_iv_analysis.png'")
     
     print("\n6. RECOMMENDATION")
     print("-" * 50)
-    
-    # Calculate additional metrics
-    month_price_cv_range = (price_by_month['std'] / price_by_month['mean']).std()
-    season_price_cv_range = (price_by_season['std'] / price_by_season['mean']).std()
-    
-    print(f"Price variation patterns:")
-    print(f"  Month-level CV variation: {month_price_cv_range:.4f}")
-    print(f"  Season-level CV variation: {season_price_cv_range:.4f}")
-    print(f"  Month dummies provide: {'More' if month_price_cv_range > season_price_cv_range else 'Less'} variation")
     
     # Make recommendation
     if f_stat_month > f_stat_season and f_stat_month > 10:

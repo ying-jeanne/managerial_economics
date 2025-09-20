@@ -13,8 +13,8 @@ from statsmodels.stats.diagnostic import het_white
 from statsmodels.stats.stattools import durbin_watson
 from statsmodels.sandbox.regression.gmm import IV2SLS
 from scipy import stats
-from feature_selection import compare_days_to_departure_specifications, get_season, investigate_season_month_instruments
-
+from data_explore import data_exploration, get_interaction_shifters
+from feature_selection import get_season
 target = "num_seats_total"
 
 # Load and explore the data
@@ -36,7 +36,7 @@ def load_and_explore_data(file_path):
     print(df.dtypes)
     print("\nBasic statistics:")
     print(df.describe())
-
+    df = fix_data_type(df)
     return df
 
 def fix_data_type(df):
@@ -70,217 +70,6 @@ def fix_data_type(df):
     print("\nData types after conversion:", df.dtypes)
     return df
 
-def verify_data_quality(df):
-    """Check for missing values and duplicates"""
-    print("\n" + "="*60)
-    print("VERIFYING DATA QUALITY")
-    print("="*60)
-
-    # Check for missing values
-    missing = df.isnull().sum()
-    if missing.sum() == 0:
-        print("No missing values found!")
-    else:
-        print("Missing values per column:")
-        print(missing[missing > 0])
-    
-    # Check for duplicates
-    duplicates = df.duplicated().sum()
-    if duplicates == 0:
-        print("No duplicate rows found!")
-    else:
-        print(f"\nTotal duplicate rows: {duplicates}")
-        df = df.drop_duplicates()
-        print("Duplicates removed.")
-
-    # Unique values per column
-    print("\nUnique values per column:")
-    for col in df.columns:
-        if len(df[col].unique()) < 10:
-            print(f"{col}: {df[col].unique()} total {len(df[col].unique())} unique values")
-        else:
-            print(f"{col}: {len(df[col].unique())} unique values")
-        if df[col].dtype == 'category':
-            df[col] = df[col].cat.as_ordered()
-        if df[col].dtype != 'bool':
-             print(f"range: {df[col].min()} to {df[col].max()}")
-       
-    return df
-
-def analyse_target(df):
-    global target
-    """Analyze target variable for demand function estimation - keep both linear and log specifications"""
-    print("\n" + "="*60)
-    print("ANALYZING TARGET VARIABLE FOR DEMAND ESTIMATION")
-    print("="*60)
-    
-    plt.figure(figsize=(15, 10))
-    
-    # Original quantity distribution
-    plt.subplot(2, 3, 1)
-    sns.histplot(df[target], bins=50, kde=True)
-    plt.title(f'Distribution of {target} (Quantity Demanded)')
-    plt.xlabel('Number of Seats Sold (Quantity)')
-    plt.ylabel('Frequency')
-
-    plt.subplot(2, 3, 2)
-    df[target].plot(kind='box')
-    plt.title('Quantity Distribution (Box Plot)')
-
-    # Create log variables for both quantity and price (keep originals too)
-    df['log_num_seats_total'] = np.log1p(df[target])  # Keep existing log quantity
-    
-    # Safe log transformation for price (handle zero/negative values)
-    min_price = df['mean_net_ticket_price'].min()
-    if min_price <= 0:
-        print(f"⚠️  Found zero/negative prices (min: {min_price:.2f}), using log(price + 1)")
-        df['log_price'] = np.log1p(df['mean_net_ticket_price'])  # log(price + 1)
-    else:
-        df['log_price'] = np.log(df['mean_net_ticket_price'])  # standard log(price)
-    
-    # Log quantity distribution
-    plt.subplot(2, 3, 3)
-    sns.histplot(df['log_num_seats_total'], bins=50, kde=True)
-    plt.title('Distribution of Log(Quantity)')
-    plt.xlabel('Log(Number of Seats)')
-    plt.ylabel('Frequency')
-
-    # Price vs Quantity (linear)
-    plt.subplot(2, 3, 4)
-    if len(df) > 5000:
-        sample_df = df.sample(5000, random_state=42)
-    else:
-        sample_df = df
-    plt.scatter(sample_df['mean_net_ticket_price'], sample_df[target], alpha=0.5, s=1)
-    plt.xlabel('Price (Linear)')
-    plt.ylabel('Quantity (Linear)')
-    plt.title('Linear Price vs Quantity')
-
-    # Log Price vs Log Quantity
-    plt.subplot(2, 3, 5)
-    plt.scatter(sample_df['log_price'], sample_df['log_num_seats_total'], alpha=0.5, s=1)
-    plt.xlabel('Log(Price)')
-    plt.ylabel('Log(Quantity)')
-    plt.title('Log Price vs Log Quantity')
-
-    # Mean quantity by price deciles
-    plt.subplot(2, 3, 6)
-    df['price_decile'] = pd.qcut(df['mean_net_ticket_price'], 10, labels=False)
-    price_quantity = df.groupby('price_decile').agg({
-        'mean_net_ticket_price': 'mean',
-        target: 'mean'
-    })
-    plt.plot(price_quantity['mean_net_ticket_price'], price_quantity[target], 'o-')
-    plt.xlabel('Mean Price by Decile')
-    plt.ylabel('Mean Quantity')
-    plt.title('Demand Relationship by Price Decile')
-    
-    plt.tight_layout()
-    plt.savefig('target_analysis.png', dpi=200)
-
-    # Summary statistics for both specifications
-    print(f"\n📊 SUMMARY STATISTICS FOR DEMAND ESTIMATION")
-    print(f"Linear Specification:")
-    print(f"  Mean Quantity: {df[target].mean():.2f} seats")
-    print(f"  Mean Price: ${df['mean_net_ticket_price'].mean():.2f}")
-    print(f"  Price-Quantity Correlation: {df[target].corr(df['mean_net_ticket_price']):.3f}")
-    
-    print(f"\nLog-Log Specification:")
-    print(f"  Mean Log(Quantity): {df['log_num_seats_total'].mean():.3f}")
-    print(f"  Mean Log(Price): {df['log_price'].mean():.3f}")
-    print(f"  Log Price-Log Quantity Correlation: {df['log_num_seats_total'].corr(df['log_price']):.3f}")
-    
-    print("✅ Target analysis for both specifications completed!")
-    return df
-
-def univariate_analysis(df):
-    """Perform univariate analysis on all variables"""
-    print("\n" + "="*60)
-    print("UNIVARIATE ANALYSIS")
-    print("="*60)
-
-    cols = list(df.columns)
-    nrows = (len(cols) + 1) // 2
-    ncols = 2
-    fig, axes = plt.subplots(nrows, ncols, figsize=(16, 5*nrows))
-    axes = axes.flatten()
-    for i, col in enumerate(cols):
-        ax = axes[i]
-        if df[col].dtype == 'category' or df[col].dtype == 'bool':
-            sns.countplot(y=df[col], order=df[col].value_counts().index, ax=ax)
-            ax.set_title(f'Count Plot of {col}')
-        elif np.issubdtype(df[col].dtype, np.number):
-            sns.histplot(df[col], bins=30, kde=True, ax=ax)
-            ax.set_title(f'Distribution of {col}')
-        elif np.issubdtype(df[col].dtype, np.datetime64):
-            # Group by year and month
-            ym = df[col].dt.to_period('M').value_counts().sort_index()
-            ym.plot(kind='bar', ax=ax)
-            ax.set_title(f'Year-Month Distribution of {col}')
-        else:
-            ax.text(0.5, 0.5, f'Skipped {col}', ha='center', va='center')
-            ax.set_title(f'Skipped {col}')
-        ax.set_xlabel(col)
-        ax.set_ylabel('Frequency')
-    # Hide any unused subplots
-    for j in range(i+1, nrows*ncols):
-        fig.delaxes(axes[j])
-    plt.tight_layout()
-    plt.savefig('univariate_analysis.png', dpi=200)
-    print("✅ Univariate analysis completed and result is saved in univariate_analysis.png!")
-
-def bivariate_analysis(df, columns_to_exclude=None):
-    """Perform bivariate analysis on all variables"""
-    print("\n" + "="*60)
-    print("BIVARIATE ANALYSIS")
-    print("="*60)
-
-    # Numerical & Boolean vs target
-    corr_cols = df.select_dtypes(include=['number', 'bool']).columns.tolist()
-    if columns_to_exclude:
-        corr_cols = [col for col in corr_cols if col not in columns_to_exclude]
-    cols = [col for col in corr_cols if col != target]
-
-    # Create a single figure with 3 subplots: 1 for heatmap, 2 for scatter plots
-    fig, axes = plt.subplots(nrows=len(cols)+1, ncols=1, figsize=(16, 5*len(corr_cols)))
-
-    # Correlation heatmap (numerical + bool)
-    corr_matrix = df[corr_cols].corr()
-    sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", center=0, ax=axes[0])
-    axes[0].set_title("Correlation Heatmap (Numerical + Bool)")
-
-    # Scatter plots
-    for i, col in enumerate(cols):
-        sns.scatterplot(x=df[col], y=df[target], ax=axes[i+1])
-        axes[i+1].set_title(f'Scatter Plot of {col} vs {target}')
-        axes[i+1].set_xlabel(col)
-        axes[i+1].set_ylabel(target)
-
-    plt.tight_layout()
-    plt.savefig('correlation_analysis.png', dpi=200)
-
-    # Categorial vs target
-    categorial_cols = [col for col in df.columns if df[col].dtype == 'category' and df[col].nunique() <= 20]  # Only those with <=20 unique values
-    if len(categorial_cols) == 1:
-        fig, ax = plt.subplots(1, 1, figsize=(16, 5))
-        df.groupby(categorial_cols[0])[target].mean().plot(kind='bar', ax=ax)
-        ax.set_title(f'Bar Plot of {target} by {categorial_cols[0]}')
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
-        fig.savefig('categorical_correlation_analysis.png', dpi=200)
-    elif len(categorial_cols) > 1:
-        fig, axes = plt.subplots(len(categorial_cols), 1, figsize=(16, 5*len(categorial_cols)))
-        for i, col in enumerate(categorial_cols):
-            ax = axes[i]
-            df.groupby(col)[target].mean().plot(kind='bar', ax=ax)
-            ax.set_title(f'Bar Plot of {target} by {col}')
-            ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
-        fig.savefig('categorical_correlation_analysis.png', dpi=200)
-    print("✅ Bivariate analysis completed and saved in correlation_analysis.png and categorical_correlation_analysis.png!")
-
-def get_interaction_shifters():
-    """Define interaction shifters for feature engineering"""
-    return ['Business_x_Premium', 'Individual_x_Premium', 'Business_x_NormCabin']
-
 def add_features(df):
     """Perform feature engineering"""
     print("\n" + "="*60)
@@ -289,7 +78,32 @@ def add_features(df):
     
     df_features = df.copy()
 
-    df_features['days_to_departure'] = (df['Dept_Date'] - df['Purchase_Date']).dt.days
+    # Ensure days_to_departure exists
+    if 'days_to_departure' not in df.columns:
+        df['Purchase_Date'] = pd.to_datetime(df['Purchase_Date'])
+        df['Dept_Date'] = pd.to_datetime(df['Dept_Date'])
+        df['days_to_departure'] = (df['Dept_Date'] - df['Purchase_Date']).dt.days
+    
+    # Always create log term if days_to_departure exists
+    if 'days_to_departure' in df.columns:
+        min_days = df['days_to_departure'].min()
+        if min_days <= 0:
+            print(f"⚠️  Found same-day bookings (min: {min_days}), using log(days + 1)")
+            df_features['log_days_to_departure'] = np.log1p(df['days_to_departure'])
+        else:
+            df_features['log_days_to_departure'] = np.log(df['days_to_departure'])
+    
+    # Proper log transformations for demand estimation
+    df_features['log_num_seats_total'] = np.log(df['num_seats_total'])  # Keep log1p for quantity (handles zeros)
+    
+    # Fix price log transformation - use natural log for proper elasticity interpretation
+    min_price = df['mean_net_ticket_price'].min()
+    if min_price <= 0:
+        print(f"⚠️  Found zero/negative prices (min: {min_price:.2f}), using log(price + 1)")
+        df_features['log_price'] = np.log1p(df['mean_net_ticket_price'])  # log(price + 1)
+    else:
+        df_features['log_price'] = np.log(df['mean_net_ticket_price'])  # standard log(price)
+
     df_features['departure_season'] = df['Dept_Date'].dt.month.apply(get_season).astype('category')
     df_features['departure_is_weekend'] = (df['Dept_Date'].dt.dayofweek >= 5).astype(bool)
 
@@ -304,47 +118,6 @@ def add_features(df):
     print(f"New features: {list(new_features)}")
     
     return df_features
-
-def clean_isoneway_isreturn_properly(df):
-    print("=" * 40)
-    print("DATA CLEANING REPORT:")
-    print("=" * 40)
-    
-    # Document the issue
-    original_count = len(df)
-    problematic = df[(df['isOneway'] == 1) & (df['isReturn'] == 1)]
-    
-    print(f"Original records: {original_count:,}")
-    print(f"Problematic records (isOneway=1, isReturn=1): {len(problematic):,}")
-    print(f"Percentage to remove: {len(problematic)/original_count*100:.2f}%")
-    
-    # Remove problematic records
-    df_clean = df[~((df['isOneway'] == 1) & (df['isReturn'] == 1))].copy()
-    
-    print(f"Cleaned records: {len(df_clean):,}")
-    print(f"Records removed: {original_count - len(df_clean):,}")
-    
-    # Verify the cleaning worked
-    remaining_problematic = df_clean[(df_clean['isOneway'] == 1) & (df_clean['isReturn'] == 1)]
-    print(f"Remaining problematic records: {len(remaining_problematic)}")
-    
-    # Show the cleaned distribution
-    print(f"\nCleaned data distribution:")
-    combo_counts = df_clean.groupby(['isOneway', 'isReturn']).size()
-    total_clean = len(df_clean)
-    
-    for (oneway, return_val), count in combo_counts.items():
-        pct = (count/total_clean)*100
-        if oneway == 0 and return_val == 0:
-            desc = "Round-trip tickets, outbound leg"
-        elif oneway == 0 and return_val == 1:
-            desc = "Round-trip tickets, return leg"
-        else:  # oneway == 1 and return_val == 0
-            desc = "One-way tickets"
-            
-        print(f"  {desc}: {count:,} ({pct:.1f}%)")
-    
-    return df_clean
 
 def encode_categorical(df, max_categories=15):
     """Encode categorical variables appropriately"""
@@ -383,80 +156,6 @@ def encode_categorical(df, max_categories=15):
     print(f"Final encoded shape: {df_encoded.shape}")
     return df_encoded
 
-def build_final_model(X, y, selected_features):
-    """Build and validate final model"""
-    print("\n" + "="*60)
-    print("Model Building & Validation")
-    print("="*60)
-    # Use only selected features
-    X_final = X[selected_features]
-    
-    # Split data
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_final, y, test_size=0.2, random_state=42
-    )
-    
-    # Train model
-    model = LinearRegression()
-    model.fit(X_train, y_train)
-    
-    # Predictions
-    y_train_pred = model.predict(X_train)
-    y_test_pred = model.predict(X_test)
-    
-    # Evaluation
-    train_r2 = r2_score(y_train, y_train_pred)
-    test_r2 = r2_score(y_test, y_test_pred)
-    train_rmse = np.sqrt(mean_squared_error(y_train, y_train_pred))
-    test_rmse = np.sqrt(mean_squared_error(y_test, y_test_pred))
-    
-    # Cross-validation
-    cv_scores = cross_val_score(model, X_final, y, cv=5, scoring='r2')
-    
-    print("="*50)
-    print("FINAL MODEL PERFORMANCE")
-    print("="*50)
-    print(f"Training R²: {train_r2:.4f}")
-    print(f"Test R²: {test_r2:.4f}")
-    print(f"Training RMSE: {train_rmse:.4f}")
-    print(f"Test RMSE: {test_rmse:.4f}")
-    print(f"Cross-validation R²: {cv_scores.mean():.4f} (±{cv_scores.std():.4f})")
-    
-    # Feature importance
-    feature_importance = pd.DataFrame({
-        'feature': selected_features,
-        'coefficient': model.coef_
-    }).sort_values('coefficient', key=abs, ascending=False)
-    
-    print("\nFeature Importance:")
-    print(feature_importance)
-    
-    # Analyze residuals
-    residuals = y_test - y_test_pred
-    plt.figure(figsize=(10, 4 * 5))
-
-    ax1 = plt.subplot(4, 1, 1)
-    ax1.scatter(y_test_pred, residuals, alpha=0.5)
-    ax1.set_xlabel('Predicted Values')
-    ax1.set_ylabel('Residuals')
-    ax1.axhline(y=0, color='r', linestyle='--')
-    ax1.set_title('Residual Plot')
-
-    i = 2
-    # Check if residuals have patterns by important features
-    for feature in ['mean_net_ticket_price', 'Culmulative_sales', 'days_to_departure']:
-        if feature in X_test.columns:
-            ax = plt.subplot(4, 1, i)
-            ax.scatter(X_test[feature], residuals, alpha=0.5)
-            ax.set_xlabel(feature)
-            ax.set_ylabel('Residuals')
-            ax.axhline(y=0, color='r', linestyle='--')
-            ax.set_title(f'Residuals vs {feature}')
-            i += 1
-
-    plt.savefig('residual_analysis.png', dpi=200)
-    return model, feature_importance
-
 def estimate_ols_demand(df, specification='linear'):
     """
     Estimate demand function using OLS: quantity = β₀ + β₁*price + β₂*demand_shifters + ε
@@ -464,11 +163,14 @@ def estimate_ols_demand(df, specification='linear'):
     OLS APPROACH: Treats price as exogenous, includes ALL relevant demand shifters
     
     Demand shifters (W): Variables that directly affect quantity demanded
-    - days_to_departure^2: Booking horizon preferences (early vs last-minute)
+    - days_to_departure: Linear booking horizon effects
     - departure_is_weekend: Trip type/purpose (leisure vs business)
     - departure_season_*: Seasonal travel demand patterns (holidays, vacations)  
     - Customer_Cat_*: Customer segment effects
     - isNormCabin: Cabin type preference
+    - Train_Number_All_*: Train type characteristics (route/service quality)
+    - isOneway/isReturn: Trip type characteristics (one-way vs return travel)
+    - Interaction terms: Business×Premium, Individual×Premium, etc.
     
     CONTRAST WITH 2SLS: In 2SLS, departure_season_* used as instruments (not shifters)
     """
@@ -477,19 +179,27 @@ def estimate_ols_demand(df, specification='linear'):
     print(f"{'='*60}")
     
     # Prepare demand shifters based on our IV discussion
-    base_shifters = ['days_to_departure', 'departure_is_weekend', 'isNormCabin', 'Customer_Cat_B']
+    base_shifters = ['log_days_to_departure', 'departure_is_weekend', 'isNormCabin', 'Customer_Cat_B']
     season_cols = [col for col in df.columns if 'departure_season_' in col]
+    
+    # Add train type characteristics as demand shifters
+    train_cols = [col for col in df.columns if 'Train_Number_All_' in col]
+    
+    # Add trip type characteristics as demand shifters  
+    trip_type_cols = [col for col in df.columns if col in ['isOneway', 'isReturn']]
     
     # Add interaction shifters for demand heterogeneity
     available_interactions = [col for col in get_interaction_shifters() if col in df.columns]
 
     # Combine all demand shifters (W variables)
-    demand_shifters = base_shifters + season_cols + available_interactions
+    demand_shifters = base_shifters + season_cols + train_cols + trip_type_cols + available_interactions
     available_shifters = [col for col in demand_shifters if col in df.columns]
     
     print(f"Using {len(available_shifters)} demand shifters:")
     print(f"  • Base shifters: {[s for s in base_shifters if s in df.columns]}")
     print(f"  • Seasonal patterns: {len([s for s in season_cols if s in df.columns])}")
+    print(f"  • Train characteristics: {len([s for s in train_cols if s in df.columns])}")
+    print(f"  • Trip type shifters: {[s for s in trip_type_cols if s in df.columns]}")
     print(f"  • Interaction shifters: {available_interactions}")
     
     if specification == 'linear':
@@ -501,42 +211,18 @@ def estimate_ols_demand(df, specification='linear'):
         X_vars = ['log_price'] + available_shifters
         price_var = 'log_price'
     
-    available_X_vars = [col for col in X_vars if col in df.columns]
-    X = df[available_X_vars].copy()
-    
+    X = df[X_vars].copy()
+
     # Convert all columns to numeric, handling booleans properly
     for col in X.columns:
         if X[col].dtype == 'bool':
             X[col] = X[col].astype(int)  # Convert boolean to 0/1
-        elif X[col].dtype == 'object':
-            X[col] = pd.to_numeric(X[col], errors='coerce')  # Convert object to numeric
         else:
             X[col] = X[col].astype(float)  # Ensure float type
     
-    # Check for and handle NaN values
-    if X.isnull().any().any() or y.isnull().any():
-        print(f"⚠️  Found NaN values, dropping {X.isnull().any(axis=1).sum() + y.isnull().sum()} rows")
-        mask = ~(X.isnull().any(axis=1) | y.isnull())
-        X = X[mask]
-        y = y[mask]
-    
     # Add constant term
     X = sm.add_constant(X)
-    
-    # Verify data types before regression
-    print(f"Data check: X shape {X.shape}, y shape {y.shape}")
-    print(f"X dtypes: {X.dtypes.unique()}")
-    print(f"y dtype: {y.dtype}")
-    
-    try:
-        model = sm.OLS(y, X).fit()
-
-    except Exception as e:
-        print(f"❌ Regression failed: {str(e)}")
-        print("Available columns:", X.columns.tolist())
-        print("Sample data types:")
-        print(X.dtypes.head(10))
-        return None, None
+    model = sm.OLS(y, X).fit()
     
     print(f"Observations: {len(y):,}")
     print(f"R-squared: {model.rsquared:.4f}")
@@ -546,12 +232,9 @@ def estimate_ols_demand(df, specification='linear'):
         price_pvalue = model.pvalues[price_var]
         
         if specification == 'linear':
-            mean_price = df['mean_net_ticket_price'].mean()
-            mean_quantity = df['num_seats_total'].mean()
-            elasticity = price_coef * (mean_price / mean_quantity)
+            elasticity = price_coef * (df['mean_net_ticket_price'].mean() / df['num_seats_total'].mean())
         else:
             elasticity = price_coef
-            
         print(f"\nPrice Elasticity: {elasticity:.4f} (p-value: {price_pvalue:.4e})")
         
         if elasticity < 0:
@@ -559,7 +242,6 @@ def estimate_ols_demand(df, specification='linear'):
             print(f"   → {'Inelastic' if abs(elasticity) < 1 else 'Elastic'} demand")
         else:
             print(f"❌ Positive elasticity - may indicate endogeneity")
-            
         return model, elasticity
     else:
         print("❌ Price variable not found")
@@ -599,7 +281,7 @@ def test_instrument_strength(df):
     available_instruments = [col for col in instruments if col in df.columns]
     
     # DEMAND SHIFTERS (W): Control variables for both stages (consistent with OLS)
-    shifters = ['days_to_departure', 'departure_is_weekend', 'Customer_Cat_B']
+    shifters = ['days_to_departure', 'log_days_to_departure', 'departure_is_weekend', 'Customer_Cat_B']
     
     # Add interaction shifters (same as OLS and 2SLS)
     available_interactions = [col for col in get_interaction_shifters() if col in df.columns]
@@ -673,13 +355,12 @@ def estimate_2sls_demand(df, specification='linear'):
     
     # INSTRUMENTS (Z): Variables for identification, based on temporal IV investigation
     season_cols = [col for col in df.columns if 'departure_season_' in col]  # Main instruments
-    supply_instruments = ['Culmulative_sales']
     train_cols = [col for col in df.columns if 'Train_Number_All_' in col]
-    instruments = season_cols + supply_instruments + train_cols
+    instruments =  ['Culmulative_sales'] + train_cols
     available_instruments = [col for col in instruments if col in df.columns]
     
     # DEMAND SHIFTERS (W): Same as OLS (consistent approach)
-    base_shifters = ['days_to_departure', 'departure_is_weekend'] 
+    base_shifters = season_cols + ['log_days_to_departure', 'departure_is_weekend'] 
     customer_cols = [col for col in df.columns if 'Customer_Cat_' in col]
     
     # Add interaction shifters for demand heterogeneity (same as OLS)
@@ -688,7 +369,7 @@ def estimate_2sls_demand(df, specification='linear'):
     demand_shifters = base_shifters + customer_cols + available_interactions
     available_shifters = [col for col in demand_shifters if col in df.columns]
     
-    print(f"Using {len(available_instruments)} instruments: {len(season_cols)} seasonal + {len(supply_instruments)} supply + {len(train_cols)} route")
+    print(f"Using {len(available_instruments)} instruments: {len(season_cols)} seasonal + 1 supply + {len(train_cols)} route")
     print(f"Using {len(available_shifters)} demand shifters (consistent with OLS)")
     print(f"  • Base shifters: {base_shifters}")
     print(f"  • Customer segments: {len([c for c in customer_cols if c in df.columns])}")
@@ -1013,46 +694,6 @@ def run_demand_analysis(df):
     
     return results
 
-def data_preparation_pipeline(df):
-    """Full data preparation pipeline"""
-    # Step 2: Convert dates before verifying data quality, it is just better to get dates right first, then just fix all data types
-    df = fix_data_type(df)
-
-    # Step 2.1: Investigate temporal instruments
-    temporal_iv_results = investigate_season_month_instruments(df)
-    
-    # Step 2.2: Compare booking specifications (linear vs quadratic vs categorical)
-    booking_comparison = compare_days_to_departure_specifications(df)
-
-    print(f"the comparation result for booking: {booking_comparison}")
-
-    df = add_features(df)
-    df = encode_categorical(df)
-    # Step 3: Verify data quality
-    df = verify_data_quality(df)
-
-    # Step 4: Verify isOneway and isReturn column business logic, and clean data if needed
-    # if is_isoneday_isreturn_hypothese_true(df):
-    #     df = clean_isoneway_isreturn_properly(df)
-    # else:
-    #     print("❌ isOneway and isReturn columns do not make sense under the new hypothesis. Please investigate further.")
-    #     return
-
-    # Step 5: Understand the target variable for demand function estimation
-    analyse_target(df)
-
-    return df, temporal_iv_results
-
-def data_preparation_with_temporal_analysis(df):
-    """Data preparation pipeline with temporal IV analysis"""
-    # Steps 2-5: Standard preparation but preserve dates for temporal analysis
-    df = fix_data_type(df)
-    df = verify_data_quality(df)
-
-    analyse_target(df)
-    
-    return df, temporal_iv_results
-
 def main_analysis(file_path):
     """Main function to run all analyses"""
     print("🚂 ANALYZING CUMULATIVE SALES IN TRAIN DATA 🚂\n")
@@ -1060,39 +701,28 @@ def main_analysis(file_path):
     # Step 1: Load and explore data
     df = load_and_explore_data(file_path)
 
+    data_exploration(df)
     # Step 2-6: Data preparation pipeline (includes feature engineering)
-    df, temporal_iv_results = data_preparation_pipeline(df)
-
-    # Step 7: Univariate analysis of all variables
-    univariate_analysis(df)
-
-    # Step 8: Bivariate analysis of all variables
-    bivariate_analysis(df, get_interaction_shifters())
+    """Full data preparation pipeline"""
+    df = add_features(df)
+    df = encode_categorical(df)
 
     # Step 9: DEMAND FUNCTION ESTIMATION
     demand_results = run_demand_analysis(df)
-    
-    return df, demand_results, temporal_iv_results
+
+    return df, demand_results
 
 # Run the analysis
 if __name__ == "__main__":
     file_path = "data.csv"
     
     try:
-        df, demand_results, temporal_iv_results = main_analysis(file_path)
+        df, demand_results = main_analysis(file_path)
         print("\n✅ Analysis completed successfully!")
         
         # Save results summary
         print("\n📋 FINAL ANALYSIS RESULTS:")
         print(f"Analysis complete with {len(df):,} observations")
-        
-        # Temporal IV results
-        if temporal_iv_results:
-            print(f"\n🎯 TEMPORAL INSTRUMENTAL VARIABLE RECOMMENDATION:")
-            print(f"  Use: {temporal_iv_results['recommendation']}")
-            print(f"  Reason: {temporal_iv_results['reason']}")
-            print(f"  Month F-stat: {temporal_iv_results['month_f_stat']:.2f}")
-            print(f"  Season F-stat: {temporal_iv_results['season_f_stat']:.2f}")
         
         # Demand function results
         if 'ols' in demand_results:
