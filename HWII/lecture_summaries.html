@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Lecture Summaries &lpar;L5-L8&rpar;</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+<link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="lecture-summaries-l5-l8">Lecture Summaries (L5-L8)</h1>
+<h2 id="l5-randomized-controlled-trial">L5: Randomized Controlled Trial</h2>
+<h3 id="key-concepts">Key Concepts</h3>
+<p><strong>Causal Effects and the Fundamental Problem</strong></p>
+<ul>
+<li>A causal effect compares two states: actual vs. counterfactual (what would have happened without treatment)</li>
+<li>The fundamental problem: we cannot observe both states simultaneously for the same unit</li>
+<li>Each unit has two potential outcomes: Y¹ (with treatment) and Y⁰ (without treatment)</li>
+</ul>
+<p><strong>Treatment Effect Estimators</strong></p>
+<ul>
+<li><strong>ATE (Average Treatment Effect)</strong>: Average effect for the whole population</li>
+<li><strong>ATT (Average Treatment on Treated)</strong>: Average effect for those who received treatment</li>
+<li><strong>ATU (Average Treatment on Untreated)</strong>: Average effect for the control group</li>
+<li>In observational settings, ATT ≠ ATU typically</li>
+</ul>
+<p><strong>Bias Decomposition</strong>
+The Simple Difference in Outcomes (SDO) contains:</p>
+<ol>
+<li>Average Treatment Effect (parameter of interest)</li>
+<li>Selection Bias: E[Y⁰|D=1] - E[Y⁰|D=0] (differences between groups even without treatment)</li>
+<li>Heterogeneous Treatment Effect Bias: (1-π)(ATT-ATU) (different treatment effects across groups)</li>
+</ol>
+<p><strong>Independence Assumption</strong></p>
+<ul>
+<li>Eliminates both selection bias and heterogeneous treatment effect bias</li>
+<li>Requires random assignment of treatment independent of potential outcomes</li>
+<li>When this holds: SDO = ATE (we can &quot;observe the unobservable&quot;)</li>
+</ul>
+<p><strong>SUTVA (Stable Unit Treatment Value Assumption)</strong></p>
+<ul>
+<li>Each treated unit receives the same dose</li>
+<li>No spillovers/externalities between units</li>
+<li>No general equilibrium effects</li>
+</ul>
+<p><strong>Statistical Significance</strong></p>
+<ul>
+<li>P-value: probability of obtaining results at least as extreme as observed, assuming null hypothesis is true</li>
+<li>P-value is evidence, NOT definitive proof</li>
+<li>P-value does NOT indicate: probability null is true, size of effect, or automatic significance at p&lt;0.05</li>
+<li>Alternatives: Confidence intervals, Bayesian inference</li>
+</ul>
+<p><strong>Sample Size Considerations</strong></p>
+<ul>
+<li>Fixed vs. adaptive sample size testing: &quot;peeking&quot; creates selection bias</li>
+<li>Pre-determine sample size based on: significance level, marginal error, power, population size</li>
+</ul>
+<p><strong>RCT Guidelines</strong></p>
+<ol>
+<li>Define research question and hypotheses</li>
+<li>Ensure Independence Assumption and SUTVA hold</li>
+<li>Determine sample size</li>
+<li>Conduct experiment with random allocation</li>
+<li>Analyze and report results</li>
+</ol>
+<p><strong>Practical Example</strong></p>
+<ul>
+<li>Research question: Does framing grading guidelines as bonus vs. penalty affect submission times?</li>
+<li>Sample: 135 students (68 bonus group, 67 penalty group)</li>
+<li>Result: No statistically significant difference (p=0.53)</li>
+<li>Lesson: &quot;No significance&quot; ≠ &quot;no effect&quot; - careful design matters</li>
+</ul>
+<hr>
+<h2 id="l7-price-discrimination-and-monopoly---linear-pricing">L7: Price Discrimination and Monopoly - Linear Pricing</h2>
+<h3 id="introduction-to-price-discrimination">Introduction to Price Discrimination</h3>
+<p><strong>What is Price Discrimination?</strong></p>
+<ul>
+<li>Selling the same product at different prices to different customers</li>
+<li>Examples: Prescription drugs (cheaper in Canada), textbooks (cheaper in UK)</li>
+<li>Presumed to be profitable but not necessarily bad for efficiency</li>
+<li>Question: Is it necessarily bad even if not &quot;fair&quot;?</li>
+</ul>
+<p><strong>Feasibility Requirements</strong>
+Two main challenges:</p>
+<ol>
+<li><strong>Identification</strong>: Firm must identify demands of different consumer types/markets</li>
+<li><strong>Arbitrage prevention</strong>: Stop low-price buyers from reselling to high-price buyers</li>
+</ol>
+<p><strong>Types of Price Discrimination</strong></p>
+<ul>
+<li>First-degree (personalized pricing)</li>
+<li>Second-degree (menu pricing)</li>
+<li>Third-degree (group pricing) ← Focus of this lecture</li>
+</ul>
+<h3 id="third-degree-price-discrimination">Third-Degree Price Discrimination</h3>
+<p><strong>Key Characteristics</strong></p>
+<ul>
+<li>Consumers differ by observable characteristics</li>
+<li>Uniform price charged within each group</li>
+<li>Different uniform prices across groups</li>
+<li>Examples: Kids eat free, airline fares, early-bird specials, student discounts</li>
+</ul>
+<p><strong>Pricing Rule</strong></p>
+<ul>
+<li>Low elasticity consumers → High price</li>
+<li>High elasticity consumers → Low price</li>
+<li>Assumes demand functions already estimated via 2SLS, DID, or RCT</li>
+</ul>
+<h3 id="profit-optimization-framework">Profit Optimization Framework</h3>
+<p><strong>Basic Model</strong></p>
+<ul>
+<li>Profit: π(Q) = P(Q)Q - F - CQ</li>
+<li>First order condition: MR - MC = 0 → MR = MC</li>
+<li>This is the main pricing condition throughout the course</li>
+</ul>
+<p><strong>What Could Go Wrong?</strong></p>
+<ul>
+<li>Price function P(Q) may be misspecified</li>
+<li>Marginal cost C may be incorrect</li>
+<li>Model risk assessment is crucial</li>
+</ul>
+<h3 id="amusement-park-example">Amusement Park Example</h3>
+<p><strong>Setup</strong></p>
+<ul>
+<li>Adults: P_A = 36 - 4Q_A</li>
+<li>Children: P_C = 24 - 4Q_C</li>
+<li>Marginal cost: MC = $4</li>
+</ul>
+<p><strong>No Price Discrimination (NPD)</strong></p>
+<ul>
+<li>Aggregate demand from both markets</li>
+<li>Find MR for aggregate demand</li>
+<li>Set MR = MC to find optimal quantity</li>
+<li>Result: P = $17, Q = 6.5 million (Q_A = 4.75M, Q_C = 1.75M)</li>
+<li>Profit = $84.5 million</li>
+</ul>
+<p><strong>With Price Discrimination</strong></p>
+<ul>
+<li>Treat each market separately</li>
+<li>Adults: Q_A = 4, P_A = $20</li>
+<li>Children: Q_C = 2.5, P_C = $14</li>
+<li>Total quantity still 6.5 million (same as NPD with linear demand)</li>
+<li>Profit = $89 million (5.33% increase)</li>
+</ul>
+<p><strong>Key Insight with Linear Demand</strong></p>
+<ul>
+<li>Price discrimination yields same aggregate output as no discrimination</li>
+<li>But increases profit by redistributing sales</li>
+</ul>
+<h3 id="non-constant-marginal-cost">Non-Constant Marginal Cost</h3>
+<p>When MC increases (e.g., MC = 0.75 + Q/2):</p>
+<p><strong>No Price Discrimination Procedure</strong></p>
+<ol>
+<li>Calculate aggregate demand</li>
+<li>Calculate associated MR</li>
+<li>Equate MR with MC for aggregate output</li>
+<li>Identify price from aggregate demand</li>
+<li>Identify individual market demands</li>
+</ol>
+<p><strong>With Price Discrimination Procedure</strong></p>
+<ol>
+<li>Identify MR in each market</li>
+<li>Aggregate the MRs</li>
+<li>Equate aggregate MR with MC for total output</li>
+<li>Find equilibrium MR</li>
+<li>Equate this MR with MC in each market for individual quantities</li>
+<li>Get prices from individual demand curves</li>
+</ol>
+<h3 id="price-discrimination-and-elasticity">Price Discrimination and Elasticity</h3>
+<p><strong>General Rule for N Markets</strong>
+P_i[1 - 1/ε_i] = C for all i = 1,...,N</p>
+<p><strong>For Two Markets</strong>
+P_1/P_2 = (1 - 1/ε_2)/(1 - 1/ε_1)</p>
+<p><strong>Key Insight</strong>: Elasticities determine relative prices</p>
+<ul>
+<li>When ε_2 rises, P_1/P_2 rises as well</li>
+<li>Price ratio depends on elasticity ratio</li>
+</ul>
+<h3 id="product-differentiation">Product Differentiation</h3>
+<p><strong>Definition</strong> (Phlips): Price discrimination exists when &quot;two varieties of a commodity are sold by the same seller to two buyers at different net prices, the net price being the price paid corrected for cost associated with product differentiation&quot;</p>
+<p><strong>Examples</strong></p>
+<ul>
+<li>Haircuts (male vs. female)</li>
+<li>Academic licenses</li>
+<li>Business vs. economy airfare</li>
+</ul>
+<p><strong>Key Finding</strong>: Even with identical costs or identical demands, price differences typically won't equal cost differences</p>
+<ul>
+<li>With identical demand P_i = A - BQ_i and different costs c_j = c_i + t:</li>
+<li>Price difference: P_j - P_i = (A_i - A_j)/2 + (c_i - c_j)/2</li>
+<li>Unlikely that price difference = cost difference</li>
+</ul>
+<h3 id="discrimination-by-location">Discrimination by Location</h3>
+<p><strong>Setup</strong>: Identical demands, different supply costs</p>
+<ul>
+<li>Example: Two amusement parks with similar demographics but different labor costs</li>
+</ul>
+<p><strong>Result</strong>: P_j - P_i = t/2 ≠ c_j - c_i</p>
+<ul>
+<li>Price difference is NOT the same as cost difference even with identical demand!</li>
+</ul>
+<h3 id="other-discrimination-mechanisms">Other Discrimination Mechanisms</h3>
+<p><strong>Usage Restrictions</strong> (to prevent arbitrage):</p>
+<ul>
+<li>Saturday night stay requirements</li>
+<li>No changes/alterations policies</li>
+<li>Personal use only restrictions</li>
+<li>Time-based restrictions (movies, restaurants)</li>
+</ul>
+<p><strong>Product &quot;Crimping&quot;</strong>:</p>
+<ul>
+<li>Deliberately degrade products for lower-tier markets</li>
+<li>Example: Mathematica® versions</li>
+</ul>
+<h3 id="welfare-effects">Welfare Effects</h3>
+<p><strong>Main Principle</strong>: Price discrimination cannot increase surplus unless it increases aggregate output</p>
+<p><strong>Standard Case</strong> (Same markets served):</p>
+<ul>
+<li>Change in welfare ΔW ≤ (P_U - MC)(ΔQ_1 + ΔQ_2)</li>
+<li>Maximum gain in weak market: G</li>
+<li>Minimum loss in strong market: L</li>
+<li>ΔW ≤ G - L</li>
+</ul>
+<p><strong>New Markets Case</strong>:</p>
+<ul>
+<li>When uniform pricing serves only &quot;strong&quot; markets</li>
+<li>Price discrimination may open &quot;weak&quot; markets</li>
+<li>If MC &lt; reservation price in weak market, discrimination increases welfare</li>
+<li>Creates both consumer surplus and profit in new market</li>
+<li>Example: Lower vaccination prices in developing countries</li>
+</ul>
+<p><strong>Conclusion</strong>: Price discrimination can increase welfare when it:</p>
+<ol>
+<li>Increases aggregate output</li>
+<li>Opens new markets that wouldn't be served otherwise</li>
+</ol>
+<hr>
+<h2 id="l9-second-degree-price-discrimination">L9: Second Degree Price Discrimination</h2>
+<h3 id="introduction---degrees-of-price-discrimination">Introduction - Degrees of Price Discrimination</h3>
+<p><strong>First-Degree Price Discrimination</strong></p>
+<ul>
+<li>Firm knows different consumers have different demand functions</li>
+<li>Firm can identify who is who</li>
+<li>Extracts all consumer surplus, usually with a two-part tariff</li>
+</ul>
+<p><strong>Second-Degree Price Discrimination</strong> (Focus of this lecture)</p>
+<ul>
+<li>Firm knows different consumers have different demand functions</li>
+<li>Firm CANNOT tell who is who</li>
+<li>Firm offers a menu of different packages/options</li>
+<li>Designed for consumers to self-select</li>
+<li>Unable to extract all consumer surplus</li>
+</ul>
+<h3 id="key-characteristics-of-second-degree-discrimination">Key Characteristics of Second-Degree Discrimination</h3>
+<p><strong>The Information Problem</strong></p>
+<ul>
+<li>Firm knows consumers have different willingness to pay (WTP)</li>
+<li>Cannot identify individual consumer types</li>
+<li>Examples:
+<ul>
+<li>Higher income people willing to pay more, but cannot tell people's income</li>
+<li>Business travelers less flexible and willing to pay more, but cannot identify them</li>
+</ul>
+</li>
+</ul>
+<p><strong>Solution Mechanism</strong></p>
+<ul>
+<li>Offer different packages allowing consumers to self-select into different price categories</li>
+</ul>
+<h3 id="theoretical-framework">Theoretical Framework</h3>
+<p><strong>Model Setup</strong></p>
+<ul>
+<li>N identical high-income consumers with inverse demand: P_H = A - Q</li>
+<li>n identical low-income consumers with inverse demand: P_L = a - Q</li>
+<li>A &gt; a &gt; 0 (high-income consumers have higher WTP)</li>
+<li>Cost function: C = cQ with 0 &lt; c &lt; a</li>
+</ul>
+<p><strong>Willingness to Pay Functions</strong></p>
+<ul>
+<li>High-income WTP: W_H(Q) = ∫₀^Q P_H(x)dx = AQ - Q²/2</li>
+<li>Low-income WTP: W_L(Q) = ∫₀^Q P_L(x)dx = aQ - Q²/2</li>
+</ul>
+<h3 id="three-strategic-options">Three Strategic Options</h3>
+<p><strong>Option 1: Target Only High-Income Consumers</strong></p>
+<ul>
+<li>Constraints: V &gt; W_L(Q) but V ≤ W_H(Q)</li>
+<li>Optimal: Charge V = W_H(Q)</li>
+<li>Solution: Q*₁ = A - c</li>
+<li>Price: V*₁ = (A² - c²)/2</li>
+<li>Profit: π*₁ = N(A - c)²/2</li>
+</ul>
+<p><strong>Option 2: Target Both Consumer Types with One Package</strong></p>
+<ul>
+<li>Constraints: V ≤ W_L(Q) (automatically satisfies V &lt; W_H(Q))</li>
+<li>Optimal: Charge V = W_L(Q)</li>
+<li>Solution: Q*₂ = a - c</li>
+<li>Price: V*₂ = (a² - c²)/2</li>
+<li>Profit: π*₂ = (N + n)(a - c)²/2</li>
+</ul>
+<p><strong>Option 3: Offer Two Different Packages</strong></p>
+<p>Four constraints must be satisfied:</p>
+<ol>
+<li>V_L ≤ W_L(Q_L) - L-consumers willing to buy their package</li>
+<li>W_L(Q_L) - V_L ≥ W_L(Q_H) - V_H - Incentive compatibility for L-consumers</li>
+<li>V_H ≤ W_H(Q_H) - H-consumers willing to buy their package</li>
+<li>W_H(Q_H) - V_H ≥ W_H(Q_L) - V_L - Incentive compatibility for H-consumers</li>
+</ol>
+<p><strong>Key Insight from Constraints</strong></p>
+<ul>
+<li>Constraint (3) follows from (1) and (4)</li>
+<li>From incentive compatibility for H-consumers: H-consumers MUST get positive surplus</li>
+<li>Price of H-package &lt; their willingness to pay</li>
+</ul>
+<h3 id="optimal-two-package-solution">Optimal Two-Package Solution</h3>
+<p><strong>Binding Constraints</strong></p>
+<ul>
+<li>(1) and (4) must be satisfied as equalities:
+<ul>
+<li>V_L = W_L(Q_L)</li>
+<li>V_H = W_H(Q_H) - W_H(Q_L) + W_L(Q_L) = AQ_H - (Q_H)²/2 - (A - a)Q_L</li>
+</ul>
+</li>
+</ul>
+<p><strong>Profit Maximization</strong></p>
+<ul>
+<li>π = N(V_H - cQ_H) + n(V_L - cQ_L)</li>
+<li>Solving first-order conditions:
+<ul>
+<li>Q*_H = A - c</li>
+<li>Q*_L = a - c - (N/n)(A - a)</li>
+</ul>
+</li>
+</ul>
+<p><strong>Feasibility Condition</strong></p>
+<ul>
+<li>Solution is acceptable iff Q*_L &gt; 0</li>
+<li>This requires: n(a - c) &gt; N(A - a)</li>
+</ul>
+<p><strong>Verification of Constraint (2)</strong></p>
+<ul>
+<li>Since (1) satisfied as equality, LHS of (2) = 0</li>
+<li>RHS of (2) = W_L(Q*_H) - V*_H = -(A - a)(Q*_H - Q*_L) &lt; 0</li>
+<li>Therefore constraint (2) is automatically satisfied</li>
+</ul>
+<p><strong>Maximum Profit</strong></p>
+<ul>
+<li>π*₃ = (N + n)(a - c)²/2 + (N + n)N(A - a)²/(2n)</li>
+<li>π<em>₃ = π</em>₂ + (N + n)N(A - a)²/(2n)</li>
+<li>Option 2 is ALWAYS inferior to Option 3</li>
+</ul>
+<h3 id="decision-rule">Decision Rule</h3>
+<p><strong>Comparing Options 1 and 3</strong></p>
+<ul>
+<li>Use Option 3 (two packages) if: n(a - c) &gt; N(A - a)</li>
+<li>Use Option 1 (only high-income) if: n(a - c) &lt; N(A - a)</li>
+</ul>
+<p><strong>Economic Intuition</strong></p>
+<ul>
+<li>Marginal WTP of L-consumer is a</li>
+<li>Introducing L-package increases profit from L-consumers by n(a - c)</li>
+<li>But this gives H-consumers surplus of (A - a)</li>
+<li>Must reduce H-package price by (A - a), losing revenue of N(A - a)</li>
+<li>Profitable to introduce L-package only if gain &gt; loss</li>
+</ul>
+<h3 id="practical-examples">Practical Examples</h3>
+<p><strong>Example 1: Option 1 Optimal</strong></p>
+<ul>
+<li>N = n, A = 10, a = 4, c = 2</li>
+<li>n(a - c) = 2n &lt; N(A - a) = 4n</li>
+<li>Monopolist chooses Option 1</li>
+<li>π<em>₁ = 32n, π</em>₂ = 4n (π<em>₃ not defined as Q</em>_L = -4)</li>
+</ul>
+<p><strong>Example 2: Option 3 Optimal</strong></p>
+<ul>
+<li>N = n, A = 10, a = 8, c = 2</li>
+<li>n(a - c) = 6n &gt; N(A - a) = 2n</li>
+<li>Monopolist chooses Option 3</li>
+<li>π<em>₁ = 32n, π</em>₂ = 36n, π*₃ = 40n</li>
+<li>Solution: Q*_H = 8, Q*_L = 4, V*_H = 40, V*_L = 24</li>
+<li>Effective per-unit prices: P_H = 5, P_L = 6</li>
+<li>H-package incorporates a <strong>quantity discount</strong></li>
+</ul>
+<h3 id="key-takeaways">Key Takeaways</h3>
+<ol>
+<li>
+<p><strong>Self-Selection Mechanism</strong>: When firms cannot identify consumer types, they design menus that induce consumers to reveal their preferences through choices</p>
+</li>
+<li>
+<p><strong>Information Rent</strong>: High-WTP consumers must receive positive surplus (information rent) to prevent them from choosing the low-price package</p>
+</li>
+<li>
+<p><strong>Distortion at the Bottom</strong>: Low-WTP consumers get less than efficient quantity (Q*_L &lt; a - c) to make their package unattractive to high-WTP consumers</p>
+</li>
+<li>
+<p><strong>No Distortion at the Top</strong>: High-WTP consumers get efficient quantity (Q*_H = A - c)</p>
+</li>
+<li>
+<p><strong>Trade-off</strong>: Firm balances between serving low-WTP market vs. extracting more surplus from high-WTP consumers</p>
+</li>
+<li>
+<p><strong>Quantity Discounts</strong>: Often implements as quantity discounts where per-unit price decreases with quantity purchased</p>
+</li>
+</ol>
+<hr>
+<h2 id="l8-second-degree-price-discrimination-continued-and-welfare-analysis">L8: Second Degree Price Discrimination (continued) and Welfare Analysis</h2>
+<h3 id="should-monopolist-serve-all-consumer-types">Should Monopolist Serve All Consumer Types?</h3>
+<p><strong>Strategic Decision</strong></p>
+<ul>
+<li>Not always optimal to serve both consumer types</li>
+<li>Sometimes better to serve only high-demand consumers</li>
+<li>Examples in practice:
+<ul>
+<li>High-class restaurants</li>
+<li>Golf and country clubs</li>
+</ul>
+</li>
+</ul>
+<h3 id="numerical-example-choosing-which-markets-to-serve">Numerical Example: Choosing Which Markets to Serve</h3>
+<p><strong>Setup</strong></p>
+<ul>
+<li>N_l low-income consumers</li>
+<li>N_h high-income consumers</li>
+</ul>
+<p><strong>Option A: Serve Both Types</strong></p>
+<ul>
+<li>Packages: ($57.50, 7) for low-income, ($92, 12) for high-income</li>
+<li>Profit: π = $31.50 × N_l + $44 × N_h</li>
+</ul>
+<p><strong>Option B: Serve Only High-Income</strong></p>
+<ul>
+<li>Package: ($120, 12)</li>
+<li>Profit: π = $72 × N_h</li>
+</ul>
+<p><strong>Profitability Condition</strong></p>
+<ul>
+<li>Serve both types only if: $31.50 × N_l + $44 × N_h &gt; $72 × N_h</li>
+<li>Simplifies to: 31.50N_l &gt; 28N_h</li>
+<li>Rearranging: N_h/N_l &lt; 31.50/28 = 1.125</li>
+</ul>
+<p><strong>Key Insight</strong>: Should NOT serve both types if there is &quot;too high&quot; a fraction of high-demand consumers</p>
+<h3 id="characteristics-of-second-degree-price-discrimination">Characteristics of Second-Degree Price Discrimination</h3>
+<p><strong>Surplus Extraction</strong></p>
+<ol>
+<li>Extract ALL consumer surplus from lowest-demand group</li>
+<li>Leave SOME consumer surplus for other groups (due to incentive compatibility constraint)</li>
+</ol>
+<p><strong>Quantity Distortion</strong></p>
+<ul>
+<li>Offer less than socially efficient quantity to all groups EXCEPT highest-demand group</li>
+<li>Only highest-demand group gets efficient quantity</li>
+</ul>
+<p><strong>Pricing Structure</strong></p>
+<ul>
+<li>Typically implemented through quantity discounting</li>
+<li>Per-unit price decreases with quantity purchased</li>
+</ul>
+<p><strong>Comparison to First-Degree</strong></p>
+<ul>
+<li>Less effective at converting consumer surplus into profit than first-degree discrimination</li>
+<li>Some consumer surplus left &quot;on the table&quot; to induce high-demand groups to buy large quantities</li>
+</ul>
+<h3 id="welfare-analysis-of-non-linear-pricing">Welfare Analysis of Non-Linear Pricing</h3>
+<p><strong>General Framework</strong></p>
+<ul>
+<li>Inverse demand of consumer group i: P = P_i(Q)</li>
+<li>Marginal cost: constant at MC = c</li>
+<li>Quantity offered to group i: Q_i</li>
+<li>Total surplus = Consumer surplus + Profit</li>
+<li>Total surplus = area between inverse demand curve and MC up to quantity Q_i</li>
+</ul>
+<p><strong>Two Effects of Pricing Policy</strong></p>
+<ol>
+<li><strong>Distribution of surplus</strong> (welfare neutral)</li>
+<li><strong>Output of the firm</strong> (affects welfare)</li>
+</ol>
+<p><strong>Welfare Impact Rule</strong>
+Price discrimination increases social welfare of group i IF AND ONLY IF it increases quantity supplied to group i</p>
+<h3 id="first-degree-price-discrimination-and-welfare">First-Degree Price Discrimination and Welfare</h3>
+<p><strong>Welfare Properties</strong></p>
+<ul>
+<li>ALWAYS increases social welfare</li>
+<li>Extracts all consumer surplus</li>
+<li>But generates socially optimal output</li>
+<li>Output to group i is Q_i(c) (where P_i(Q_i) = c)</li>
+<li>This exceeds output with uniform (non-discriminatory) pricing</li>
+</ul>
+<p><strong>Conclusion</strong>: First-degree discrimination achieves allocative efficiency despite distributional concerns</p>
+<h3 id="second-degree-menu-pricing-and-welfare">Second-Degree (Menu) Pricing and Welfare</h3>
+<p><strong>Two-Market Analysis</strong></p>
+<p>Market structure:</p>
+<ul>
+<li>Low-demand market</li>
+<li>High-demand market</li>
+<li>Uniform price: P_U</li>
+<li>Menu pricing quantities: Q_ls (low), Q_hs (high)</li>
+<li>Uniform pricing quantities: Q_lU (low), Q_hU (high)</li>
+</ul>
+<p><strong>Key Observations</strong></p>
+<ol>
+<li>High-demand group: offered socially optimal quantity</li>
+<li>Low-demand group: offered LESS than socially optimal quantity</li>
+</ol>
+<p><strong>Welfare Calculation</strong></p>
+<ul>
+<li>Welfare loss in low-demand market &gt; L (deadweight loss from reduced quantity)</li>
+<li>Welfare gain in high-demand market &lt; G (gain from increased quantity)</li>
+<li>Net welfare change: ΔW &lt; G - L</li>
+</ul>
+<p><strong>Mathematical Expression</strong></p>
+<ul>
+<li>ΔW = (P_U - MC)ΔQ_1 + (P_U - MC)ΔQ_2</li>
+<li>ΔW = (P_U - MC)(ΔQ_1 + ΔQ_2)</li>
+</ul>
+<p><strong>Necessary Condition for Welfare Improvement</strong>
+Second-degree price discrimination increases social welfare ONLY IF it increases total output (ΔQ_1 + ΔQ_2 &gt; 0)</p>
+<h3 id="comparison-with-third-degree-price-discrimination">Comparison with Third-Degree Price Discrimination</h3>
+<p><strong>Similarities</strong></p>
+<ul>
+<li>Both require total output increase for welfare improvement</li>
+<li>Same basic welfare condition</li>
+</ul>
+<p><strong>Key Difference</strong></p>
+<ul>
+<li>Second-degree price discrimination is MORE LIKELY to increase output than third-degree</li>
+<li>Therefore more likely to improve social welfare</li>
+</ul>
+<h3 id="the-incentive-compatibility-constraint---broader-applications">The Incentive Compatibility Constraint - Broader Applications</h3>
+<p><strong>Core Principle</strong>
+Any offer made to high-demand consumers must offer them at least as much consumer surplus as they would get from an offer designed for low-demand consumers</p>
+<p><strong>Applications Beyond Pricing</strong></p>
+<ol>
+<li>
+<p><strong>Performance Bonuses</strong></p>
+<ul>
+<li>Must encourage effort</li>
+<li>Workers must prefer working hard with bonus over shirking</li>
+</ul>
+</li>
+<li>
+<p><strong>Insurance Policies</strong></p>
+<ul>
+<li>Need large deductibles to deter cheating</li>
+<li>High-risk customers must not prefer low-risk policies</li>
+</ul>
+</li>
+<li>
+<p><strong>Factory Piece Rates</strong></p>
+<ul>
+<li>Must be accompanied by strict quality inspection</li>
+<li>Workers must not sacrifice quality for quantity</li>
+</ul>
+</li>
+<li>
+<p><strong>Bulk Purchase Discounts</strong></p>
+<ul>
+<li>Must offer sufficient price discount</li>
+<li>High-volume buyers must prefer bulk package over multiple small purchases</li>
+</ul>
+</li>
+</ol>
+<h3 id="summary-of-key-welfare-results">Summary of Key Welfare Results</h3>
+<p><strong>First-Degree Discrimination</strong></p>
+<ul>
+<li>Allocatively efficient (socially optimal output)</li>
+<li>All consumer surplus extracted</li>
+<li>Always welfare improving compared to monopoly pricing</li>
+</ul>
+<p><strong>Second-Degree Discrimination</strong></p>
+<ul>
+<li>NOT allocatively efficient</li>
+<li>Only highest-demand group gets efficient quantity</li>
+<li>All other groups face quantity distortion (Q &lt; Q*)</li>
+<li>Welfare improvement requires total output increase</li>
+<li>More likely to improve welfare than third-degree discrimination</li>
+</ul>
+<p><strong>Policy Implications</strong></p>
+<ul>
+<li>Cannot judge price discrimination on distributional grounds alone</li>
+<li>Must consider impact on total output and allocative efficiency</li>
+<li>Second-degree discrimination represents a middle ground between efficiency and surplus extraction</li>
+</ul>
+
+            <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
+            
+        </body>
+        </html>

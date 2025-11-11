@@ -1,0 +1,437 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\geometry{margin=1in}
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\renewcommand{\footrulewidth}{0.4pt} % adds a line at the top of the footer
+\fancyfoot[R]{\thepage} % right-aligned page number
+
+% filepath: /Users/ying-jeanne/Workspace/nus/economy.tex
+\title{
+  \fbox{
+    \parbox{0.95\textwidth}{
+      \centering
+      \Large DBA5101 Analytics in Managerial Economics \\Homework 2\\[1em]
+      \normalsize Ying WANG
+    }
+  }
+}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+
+\vspace{-4em} % Reduce vertical space after title
+
+\section*{Problem 1}
+Given Information about amusement park customers:
+\begin{itemize}
+    \item Thrill-Seekers (T): $P_T = 70 - 2Q_T$
+    \item Families (F): $P_F = 50 - Q_F$
+    \item Marginal Cost: $MC = 10$
+\end{itemize}
+
+\begin{enumerate}[label=(\alph*)]
+
+\item The price under discrimination should be applied are showing below:
+
+\fbox{\parbox{0.9\textwidth}{
+\begin{itemize}
+    \item Thrill-Seekers: $P_T^* = 40$ SGD, $Q_T^* = 15$
+    \item Families: $P_F^* = 30$ SGD, $Q_F^* = 20$
+\end{itemize}
+}}
+
+The reasoning is as follows:
+for profit maximization, we apply the rule $MR = MC$ for each market separately.
+
+\textbf{Thrill-Seekers:}
+\begin{align*}
+P_T &= 70 - 2Q_T \\
+R_T &= P_T \cdot Q_T = (70 - 2Q_T)Q_T = 70Q_T - 2Q_T^2 \\
+MR_T &= \frac{d(R_T)}{dQ_T} = 70 - 4Q_T
+\end{align*}
+
+Here we set $MR_T = MC$ to maximize revenue:
+\begin{align*}
+&70 - 4Q_T = 10 \implies Q_T = 15 \\
+\text{Therefore:} \quad &P_T = 70 - 2 \times 15 = 70 - 30 = 40
+\end{align*}
+
+\textbf{Families:}
+\begin{align*}
+P_F &= 50 - Q_F \\
+R_F &= P_F \cdot Q_F = (50 - Q_F)Q_F = 50Q_F - Q_F^2 \\
+MR_F &= \frac{d(R_F)}{dQ_F} = 50 - 2Q_F
+\end{align*}
+
+Here we set $MR_F = MC$ to maximize revenue:
+\begin{align*}
+&50 - 2Q_F = 10 \implies Q_F^* = 20 \\
+\text{Therefore:} \quad &P_F^* = 50 - 20 = 30
+\end{align*}
+
+\item The uniform pricing should be applied is showing below:
+
+\fbox{\parbox{0.9\textwidth}{
+\begin{itemize}
+    \item Uniform Price: $P^* = 33.33$ SGD
+    \item Total Quantity: $Q_{total}^* = 35$ (Thrill-seekers: 18.33, Families: 16.67)
+\end{itemize}
+}}
+
+The reasoning is as follows: to find the aggregate demand, we need to sum quantities at each price level. Here set $P_T = P_F = P$
+\begin{align*}
+P_T &= 70 - 2Q_T \implies Q_T = \frac{70 - P}{2} (\text{valid for } P \leq 70)\\
+P_F &= 50 - Q_F \implies Q_F = 50 - P (\text{valid for } P \leq 50)
+\end{align*}
+
+\begin{enumerate} [label= (\roman*)]
+
+\item When $P \leq 50$, both groups buy:
+\begin{align*}
+Q_{total} &= Q_T + Q_F = \frac{70 - P}{2} + (50 - P) = 85 - 1.5P
+\end{align*}
+
+Profit function:
+\begin{align*}
+\pi(P) &= (P - MC) \cdot Q_{total}(P) = (P - 10)(85 - 1.5P) \\
+&= 85P - 1.5P^2 - 850 + 15P = 100P - 1.5P^2 - 850
+\end{align*}
+
+Taking derivative with respect to P:
+\begin{align*}
+\frac{d\pi}{dP} &= 100 - 3P
+\end{align*}
+
+Setting $\frac{d\pi}{dP} = 0$:
+\begin{align*}
+100 - 3P &= 0 \implies P^* = 33.33
+\end{align*}
+
+Therefore:
+\begin{align*}
+Q_{total}^* &= 85 - 1.5 \times 33.33 = 85 - 50 = 35 \\
+\pi &= (33.33 - 10) \times 35 = 23.33 \times 35 = 816.67
+\end{align*}
+
+Individual quantities:
+\begin{align*}
+Q_T &= \frac{70 - 33.33}{2} = 18.33 \\
+Q_F &= 50 - 33.33 = 16.67
+\end{align*}
+
+The price is valid since $P^* = 33.33 \leq 50$.
+
+\item When $P > 50$, only thrill-seekers buy:
+\begin{align*}
+Q_{total} = Q_T = \frac{70 - P}{2}
+\end{align*}
+
+Profit function:
+\begin{align*}
+\pi(P) &= (P - MC) \cdot Q_T(P) = (P - 10) \cdot \frac{70 - P}{2} \\
+&= \frac{(P - 10)(70 - P)}{2} = \frac{70P - P^2 - 700 + 10P}{2} \\
+&= \frac{80P - P^2 - 700}{2}
+\end{align*}
+
+Taking derivative with respect to P:
+\begin{align*}
+\frac{d\pi}{dP} &= \frac{80 - 2P}{2} = 40 - P
+\end{align*}
+
+Setting $\frac{d\pi}{dP} = 0$:
+\begin{align*}
+40 - P &= 0 \implies P^* = 40
+\end{align*}
+
+Therefore:
+\begin{align*}
+Q_{total}^* &= \frac{70 - 40}{2} = 15 \\
+\pi &= (40 - 10) \times 15 = 30 \times 15 = 450
+\end{align*}
+
+Since $P^* = 40 \leq 50$, this contradicts our assumption $P > 50$. Therefore, this case does not yield a valid solution in the range $P > 50$.
+
+\item Boundary at $P = 50$:
+
+At the transition point where families stop buying (the profit function has a kink due to piecewise demand):
+\begin{align*}
+Q_T &= \frac{70 - 50}{2} = 10, \quad Q_F = 50 - 50 = 0 \\
+\pi &= (50 - 10) \times 10 = 400
+\end{align*}
+
+\end{enumerate}
+
+Comparing all three cases: Case (i) yields $\pi = 816.67$, Case (ii) is invalid, and Case (iii) yields $\pi = 400$. Therefore, the optimal uniform price is $P^* = 33.33$ from Case (i).
+
+\item The total profits in the 2 scenarios are showing below:
+
+\fbox{\parbox{0.9\textwidth}{
+\begin{itemize}
+    \item Profit with Price Discrimination: 850 SGD
+    \item Profit with Uniform Pricing: 816.67 SGD
+    \item Difference: 33.33 SGD (4.08\% increase)
+\end{itemize}
+
+\textbf{Explanation:} Price discrimination is more profitable. Because it allows the park to charge higher prices to the less elastic group (thrill-seekers) while still capturing the more price-sensitive families market. The park extracts more consumer surplus by tailoring prices to each group's willingness to pay, resulting in approximately 4\% higher profits compared to uniform pricing.
+}}
+
+The calculations are as follows:
+
+\textbf{Profit with Price Discrimination:}
+\begin{align*}
+\pi_{PD} &= (P_T^* - MC) \cdot Q_T^* + (P_F^* - MC) \cdot Q_F^* \\
+&= (40 - 10)\times 15 + (30 - 10)\times 20 \\
+&= 850 \text{ SGD}
+\end{align*}
+
+\textbf{Profit with Uniform Pricing:}
+\begin{align*}
+\pi_{UP} &= (P^* - MC) \cdot Q_{total}^* \\
+&= (33.33 - 10) \times 35 \\
+&= 816.67 \text{ SGD}
+\end{align*}
+
+\textbf{Profit Difference:}
+\begin{align*}
+\Delta\pi &= \pi_{PD} - \pi_{UP} = 850 - 816.67 = 33.33 \text{ SGD}
+\end{align*}
+
+\end{enumerate}
+\textbf{Note:} The non-integer quantities (e.g., Q = 18.33, 16.67) are acceptable in this continuous demand model. In practice, these could represent quantities in larger units (e.g., hundreds of customers) or be rounded to whole numbers for implementation.
+
+\section*{Problem 2}
+Given Information about movie theater customers:
+\begin{itemize}
+    \item Students (S): $Q_S = 100 - 8P_S$
+    \item Non-students (N): $Q_N = 100 - 4P_N$
+    \item Marginal Cost: $MC = 2$
+\end{itemize}
+
+\begin{enumerate}[label=(\alph*)]
+\item The uniform price should be applied is showing below:
+
+\fbox{\parbox{0.9\textwidth}{
+\begin{itemize}
+    \item Uniform Price: $P^* = 9.33$ SGD
+    \item Total Quantity: $Q_{total}^* = 88$ (Students: 25.36, Non-students: 62.68)
+\end{itemize}
+}}
+
+The reasoning is as follows: to find the aggregate demand, we need to sum quantities at each price level. Here set $P_S = P_N = P$
+\begin{align*}
+Q_S &= 100 - 8P (\text{valid for } P \leq 12.5)\\
+Q_N &= 100 - 4P (\text{valid for } P \leq 25)
+\end{align*}
+
+\begin{enumerate} [label= (\roman*)]
+
+\item When $P \leq 12.5$, both groups buy:
+\begin{align*}
+Q_{total} &= Q_S + Q_N = (100 - 8P) + (100 - 4P) = 200 - 12P
+\end{align*}
+
+Profit function:
+\begin{align*}
+\pi(P) &= (P - MC) \cdot Q_{total}(P) = (P - 2)(200 - 12P) \\
+&= 200P - 12P^2 - 400 + 24P = 224P - 12P^2 - 400
+\end{align*}
+
+Taking derivative with respect to P:
+\begin{align*}
+\frac{d\pi}{dP} &= 224 - 24P
+\end{align*}
+
+Setting $\frac{d\pi}{dP} = 0$:
+\begin{align*}
+224 - 24P &= 0 \implies P^* = 9.33
+\end{align*}
+
+Therefore:
+\begin{align*}
+Q_{total}^* &= 200 - 12 \times 9.33 = 200 - 112 = 88 \\
+\pi &= (9.33 - 2) \times 88 = 7.33 \times 88 = 645.04
+\end{align*}
+
+The price is valid since $P^* = 9.33 \leq 12.5$.
+
+\item When $12.5 < P \leq 25$, only non-students buy:
+\begin{align*}
+Q_{total} = Q_N = 100 - 4P
+\end{align*}
+
+Profit function:
+\begin{align*}
+\pi(P) &= (P - MC) \cdot Q_N(P) = (P - 2)(100 - 4P) \\
+&= 100P - 4P^2 - 200 + 8P = 108P - 4P^2 - 200
+\end{align*}
+
+Taking derivative with respect to P:
+\begin{align*}
+\frac{d\pi}{dP} &= 108 - 8P
+\end{align*}
+
+Setting $\frac{d\pi}{dP} = 0$:
+\begin{align*}
+108 - 8P &= 0 \implies P^* = 13.5
+\end{align*}
+
+Therefore:
+\begin{align*}
+Q_{total}^* &= 100 - 4 \times 13.5 = 100 - 54 = 46 \\
+\pi &= (13.5 - 2) \times 46 = 11.5 \times 46 = 529
+\end{align*}
+
+The price is valid since $13.5 \in (12.5, 25]$.
+
+\item Boundary at $P = 12.5$:
+
+At the transition point where students stop buying (the profit function has a kink due to piecewise demand):
+\begin{align*}
+Q_S &= 100 - 8 \times 12.5 = 0, \quad Q_N = 100 - 4 \times 12.5 = 50 \\
+\pi &= (12.5 - 2) \times 50 = 525
+\end{align*}
+
+\end{enumerate}
+
+Comparing all three cases: Case (i) yields $\pi = 645.04$, Case (ii) yields $\pi = 529$, and Case (iii) yields $\pi = 525$. Since $645.04 > 529 > 525$, the optimal uniform price is $P^* = 9.33$ from Case (i).
+
+\item The prices under discrimination should be applied are showing below:
+
+\fbox{\parbox{0.9\textwidth}{
+\begin{itemize}
+    \item Students: $P_S^* = 7.25$ SGD
+    \item Non-students: $P_N^* = 13.50$ SGD
+\end{itemize}
+}}
+
+The reasoning is as follows: for profit maximization, we apply the rule $MR = MC$ for each market separately.
+
+\textbf{Students:}
+\begin{align*}
+P_S &= 12.5 - 0.125Q_S \\
+R_S &= P_S \cdot Q_S = (12.5 - 0.125Q_S)Q_S = 12.5Q_S - 0.125Q_S^2 \\
+MR_S &= \frac{d(R_S)}{dQ_S} = 12.5 - 0.25Q_S
+\end{align*}
+
+Setting $MR_S = MC$:
+\begin{align*}
+12.5 - 0.25Q_S &= 2 \\
+0.25Q_S &= 10.5 \\
+Q_S^* &= 42
+\end{align*}
+
+Therefore: $P_S^* = 12.5 - 0.125(42) = 12.5 - 5.25 = 7.25$
+
+\textbf{Non-students:}
+\begin{align*}
+P_N &= 25 - 0.25Q_N \\
+R_N &= P_N \cdot Q_N = (25 - 0.25Q_N)Q_N = 25Q_N - 0.25Q_N^2 \\
+MR_N &= \frac{d(R_N)}{dQ_N} = 25 - 0.5Q_N
+\end{align*}
+
+Setting $MR_N = MC$:
+\begin{align*}
+25 - 0.5Q_N &= 2 \\
+0.5Q_N &= 23 \\
+Q_N^* &= 46
+\end{align*}
+
+Therefore: $P_N^* = 25 - 0.25(46) = 25 - 11.5 = 13.50$
+
+\item The total profits in the 2 scenarios are showing below:
+
+\fbox{\parbox{0.9\textwidth}{
+\begin{itemize}
+    \item Profit with Price Discrimination: 749.50 SGD
+    \item Profit with Uniform Pricing: 645.04 SGD
+    \item Difference: 104.46 SGD (16.2\% increase)
+\end{itemize}
+}}
+
+The calculations are as follows:
+
+\textbf{Profit with Uniform Pricing:}
+
+At $P^* = 9.33$:
+\begin{align*}
+Q_S &= 100 - 8(9.33) = 100 - 74.64 = 25.36 \\
+Q_N &= 100 - 4(9.33) = 100 - 37.32 = 62.68 \\
+Q_{total} &= 25.36 + 62.68 = 88.04 \approx 88
+\end{align*}
+
+Profit:
+\begin{align*}
+\pi_{UP} &= (P^* - MC) \cdot Q_{total}^* \\
+&= (9.33 - 2) \times 88 \\
+&= 645.04
+\end{align*}
+\textbf{Price Discrimination:}
+
+Quantities: $Q_S^* = 42$, $P_S^* = 7.25$, $Q_N^* = 46$, $P_N^* = 13.50$
+
+Profit:
+\begin{align*}
+\pi_{PD} &= (P_S^* - MC) \cdot Q_S^* + (P_N^* - MC) \cdot Q_N^* \\
+&= (7.25 - 2) \times 42 + (13.50 - 2) \times 46 \\
+&= 749.50
+\end{align*}
+\textbf{Profit Difference:}
+\begin{align*}
+\Delta\pi &= \pi_{PD} - \pi_{UP} = 749.50 - 645.04 = 104.46 \text{ SGD}
+\end{align*}
+
+\textbf{Quantity Difference:}
+
+The total quantity sold in both scenarios is approximately the same (88 customers), but price discrimination yields a significantly higher profit due to better price targeting.
+
+\item Comparison and conclusions are showing below:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Metric} & \textbf{Uniform Pricing} & \textbf{Price Discrimination} \\
+\hline
+Student Price & SGD 9.33 & SGD 7.25 \\
+Non-student Price & SGD 9.33 & SGD 13.50 \\
+Student Quantity & 25.36 & 42 \\
+Non-student Quantity & 62.68 & 46 \\
+Total Quantity & 88 & 88 \\
+Total Profit & SGD 645.04 & SGD 749.50 \\
+\hline
+\end{tabular}
+\end{table}
+
+\fbox{\parbox{0.9\textwidth}{
+\textbf{Conclusions}
+
+\begin{enumerate}
+    \item \textbf{Total Output}: Both strategies result in the same total quantity (88 customers). For linear demand curves with constant marginal cost, third-degree price discrimination redistributes output across markets without changing total output, as long as all markets are served under both regimes.
+
+    \item \textbf{Price Differences}:
+    \begin{itemize}
+        \item Students pay \textbf{less} under discrimination (SGD 7.25 vs 9.33)
+        \item Non-students pay \textbf{more} under discrimination (SGD 13.50 vs 9.33)
+    \end{itemize}
+
+    \item \textbf{Quantity Redistribution}: Price discrimination shifts sales from non-students (62.68 → 46) to students (25.36 → 42), reflecting their different price sensitivities.
+
+    \item \textbf{Price Sensitivity}: Students have more elastic demand (with demand slope $dQ_S/dP = -8$ compared to $dQ_N/dP = -4$), meaning they are more price-sensitive, so they receive a lower price under discrimination.
+
+    \item \textbf{Profit Improvement}: Price discrimination increases profit by 104.46 SGD (16.2\% increase), demonstrating its effectiveness in extracting consumer surplus from less elastic segments while expanding sales to more elastic segments.
+
+    \item \textbf{Welfare Implications}: Since total output remains constant, the welfare redistribution is from consumers to the firm, with no change in total surplus (deadweight loss remains the same).
+\end{enumerate}
+}}
+
+\end{enumerate}
+
+\end{document}
