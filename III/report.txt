@@ -1,0 +1,265 @@
+1. Introduction
+PizzaHub, a major pizza delivery service, operates across four regions with varying distances, costs, and customer demand levels. On March 1, 2023, the firm introduced targeted discounts in two treatment regions:
+Region 3: 5% discount on the food fee
+
+
+Region 4: 5% discount on the delivery fee
+
+
+Regions 1 and 2 received no discount, serving as natural control groups.
+2. Objective
+Evaluate the causal impact of the two pricing interventions and recommend profit-maximizing pricing strategies for Regions 3 and 4.
+Research Questions:
+What is the causal effect of targeted food vs. delivery discounts on pizza sales in the respective regions?
+Which pricing strategy is more effective at increasing the quantity sold?
+What are the implications for future pricing and profit maximization?
+How did the discounts affect pizza demand in Regions 3 and 4?
+
+
+
+3. Data and Experimental Design
+
+Dataset Overview
+Period: Jan 1 – Apr 30, 2023
+
+
+Total Observations: 480 daily orders
+
+
+Regions: 4 (120 days each)
+
+
+Variables: Date, Region, Unit Price, Quantity Ordered, Distance, Delivery Fee, Discount Applied
+Intervention Structure
+Region
+Intervention
+Mechanism
+Starts
+1
+None
+Control
+-
+2
+None
+Control
+-
+3
+5% food price discount
+Reduces Unit Price
+Mar 1, 2023
+4
+5% delivery fee discount
+Reduces Delivery Fee
+Mar 1, 2023
+
+
+Treatment & Control Framework
+Control group: Regions 1 & 2
+
+
+Treatment 1: Region 3 (price discount)
+	
+Treatment 2: Region 4 (delivery discount)
+
+4. Data Cleaning & Exploration
+Data Cleaning
+Data checked for completeness. All regions have 120 days with non-missing values.
+“Discount Applied” variable: correctly assigned for Regions 3 and 4 post-March; no errors found.
+Delivery fee computed exactly using: Delivery Fee=0.5*Distance
+
+Exploratory Data Analysis (EDA)
+
+Region
+Mean Price
+Mean Qty
+Mean Delivery Fee
+1
+$16.00
+19.46
+$1.00
+2
+$16.00
+15.85
+$2.50
+3
+$15.59
+12.55
+$4.50
+4
+$16.00
+8.31
+$7.31
+
+Discount periods correspond to a clear drop in mean price in Region 3 and sharp changes in order volume in Regions 3 and 4. Before March 1, the average daily quantity was 9.41 pizzas in Region 3 and 6.64 in Region 4; after the discount started, these increased to 15.59 and 9.92 pizzas per day, respectively. Over the entire sample, Regions 1 and 2 sell more on average (19.46 and 15.85 pizzas/day) than Regions 3 and 4 (12.55 and 8.31 pizzas/day), and they also have lower average delivery fees, consistent with distance being an important driver of demand.
+
+5. Methodology
+
+
+5.1 Demand estimation (price and delivery fees)
+We first estimate a reduced-form demand function at the daily region level using Ordinary Least Squares (OLS). The dependent variable is Quantity Ordered, and the key explanatory variables are Unit Price and Delivery Fees, with region and date controls:
+Qit=α+β1Priceit+β2DeliveryFeeit+μi+λt+εit
+where i indexes region, t indexes date, μi are region fixed effects (implemented via region dummies), and λt are date fixed effects (implemented via date dummies). This specification allows us to recover the price sensitivity and delivery-fee sensitivity of demand while controlling for unobserved region characteristics and common daily shocks.
+5.2 Difference-in-Differences (DiD) for causal effects of discounts
+ To identify the causal impact of the March 1, 2023, discounts, we construct:
+
+
+We then estimate three DiD models with region and date fixed effects:
+Model 1 (Food discount effect – Region 3 vs 1 & 2)
+Sample: Regions 1, 2, 3
+Specification: Qit=α+δR3DIDR3,it+γpostt+μi+λt+εit
+
+
+Model 2 (Delivery discount effect – Region 4 vs 1 & 2)
+Sample: Regions 1, 2, 4
+Specification: Qit=α+δR4DIDR4,it+γpostt+μi+λt+εit
+
+
+Model 3 (Joint model – Regions 1–4)
+Sample: all regions
+Specification: Qit=α+δR3DID +δR4DID+γpostt+μi+λt+εit
+The DiD coefficients δR3 and δR4​ measure the causal effect of the food and delivery fee discounts on daily pizza demand in Regions 3 and 4, respectively, relative to the control regions (1 and 2).
+Parallel trends and robustness checks
+So far in this report, we have visually inspected pre-treatment trends by plotting region-level daily demand (with 7-day rolling averages) prior to March 1st. The pre-trends for Regions 1–4 appear approximately parallel.
+
+We run placebo DiD tests using only pre-period data and a fake treatment date of 1 February 2023. The placebo treatment effects are small and statistically insignificant for both Region 3 and Region 4, supporting the parallel trends assumption.
+
+
+5.3 Profit estimation and multi-armed bandit optimisation
+To link demand to profitability, we construct an approximate profit per order measure using an assumed unit cost of $4 per pizza:
+Profit per order = (Unit Price−4) * Quantity Ordered
+Regions 1 & 2: no_discount
+
+
+Region 3: price_5pct (5% food discount from March 1)
+
+
+Region 4: delivery_5pct (5% delivery fee discount from March 1).
+
+
+We summarise average and total profit per order by strategy and then simulate four multi-armed bandit (MAB) algorithms, N-Average, ε-Greedy, UCB1, and Thompson Sampling, where each “arm” is a pricing strategy. In each round, the algorithm chooses a strategy, receives a profit-per-order reward sampled from the historical distribution of that arm, and updates its beliefs. This allows us to study which pricing strategy a profit-maximising learning algorithm would converge to.
+6. Results
+6.1 Demand estimation results
+ The baseline OLS demand model (without date fixed effects) shows that both product price and delivery fees have strong negative effects on demand:
+A $1 increase in Unit Price is associated with approximately 7.7 fewer pizzas per day (coefficient ≈ −7.73, p < 0.001).
+
+
+A $1 increase in Delivery Fees is associated with approximately 8.7 fewer pizzas per day (coefficient ≈ −8.73, p < 0.001).
+
+
+When we add date fixed effects (region and date dummies), the results are very similar and slightly stronger in magnitude:
+Unit Price coefficient ≈ −8.41 (p < 0.001).
+
+
+Delivery Fees coefficient ≈ −10.19 (p < 0.001).
+
+
+This confirms that both higher food prices and higher delivery fees significantly reduce daily demand, even after controlling for unobserved time and region effects.
+6.2 DiD treatment effects of discounts
+The DiD models quantify the causal impact of the March 1 discounts on daily quantity ordered. In the joint model (Model 3 with region and date fixed effects), we obtain:
+Food price discount in Region 3 (DID_R3)
+Coefficient: +6.73 pizzas/day (p < 0.001)
+Interpretation: after the 5% food price discount, Region 3’s daily demand increased by about 6.7 pizzas per day relative to what would have happened in the absence of the discount, using Regions 1 and 2 as controls.
+
+
+Delivery fee discount in Region 4 (DID_R4)
+Coefficient: +3.82 pizzas/day (p < 0.001)
+Interpretation: the 5% delivery fee discount increased Region 4’s daily demand by about 3.8 pizzas per day, again relative to the control regions.
+
+
+The common time effect (post) is statistically insignificant, implying that overall demand in the control regions is roughly flat across the pre- and post-periods.
+
+
+Pre-trend plots and placebo DiD tests (using a fake treatment date of 1 February 2023) show no significant “fake” treatment effects, supporting the parallel trends assumption.
+A concise summary of the main DiD coefficients is shown below:
+Treatment Region
+Discount Type
+DiD effect (pizzas/day)
+Significance
+Region 3
+5% food price
++6.73
+*** (p<0.01)
+Region 4
+5% delivery fee
++3.82
+*** (p<0.01)
+
+This table highlights that food discounts have roughly twice the impact on demand compared to delivery fee discounts in this setting.
+6.3 Profit analysis and bandit simulation results
+ Using the assumed unit cost of $4, we compute profit per order for each observation and summarise performance by pricing strategy:
+No discount (no_discount, Regions 1 & 2)
+Average profit per order: $211.85
+Total profit: $50844
+Number of orders: 240
+
+
+5% food discount (price_5pct, Region 3)
+Average profit per order: $144.26
+Total profit: $17311.20
+Number of orders: 120
+
+
+5% delivery discount (delivery_5pct, Region 4)
+Average profit per order: $99.70
+Total profit: $11964.00
+Number of orders: 120
+These summary statistics indicate that, on a per-order basis, the no-discount strategy is the most profitable, followed by the food discount, with the delivery discount being the least profitable. This is consistent with the intuition that discounts boost quantity but reduce margin, and that regions with higher delivery costs (like Region 4) struggle more to offset the margin loss.
+We then simulate four multi-armed bandit algorithms (N-Average, ε-Greedy, UCB1, and Thompson Sampling) where each arm represents one of the three pricing strategies. Across 2,000 simulated rounds, all policies achieve similar cumulative profits, but:
+UCB1 and Thompson Sampling achieve the highest cumulative simulated profit, and all learning algorithms tend to concentrate their choices on the no-discount strategy, as it has the highest observed profit per order in the historical data.
+
+
+In summary, discounts clearly increase demand (especially food discounts), but they reduce profit per order relative to no-discount pricing.
+7. Managerial Recommendations
+The DiD analysis shows that the 5% food discount in Region 3 increases demand by about 6.7 pizzas/day, while the 5% delivery discount in Region 4 increases demand by about 3.8 pizzas/day. Food discounts are therefore more effective at boosting volume.
+
+However, the profit analysis indicates that the average profit per order is highest under the no-discount strategy, followed by the food discount, with the delivery discount being the least profitable.
+Therefore, based on these findings, we recommend the following:
+If the primary objective is profit maximisation:
+
+
+Move Regions 3 and 4 towards the no-discount price over time, as this strategy yields the highest profit per order in the historical data.
+In the short run, prioritise scaling back the delivery discount in Region 4, which has the weakest demand response and lowest profit per order.
+
+
+But if PizzaHub prioritises demand growth or market penetration:
+
+
+Use food (product) discounts rather than delivery fee discounts. The 5% food discount in Region 3 delivers almost twice the demand uplift of the 5% delivery discount in Region 4.
+
+
+Consider time-limited or targeted food discounts (e.g., off-peak days or new-customer promotions) to boost demand while limiting the profit hit.
+
+
+Algorithmic pricing and continuous learning:
+
+
+Our bandit simulations show that simple learning algorithms (UCB1, Thompson Sampling) quickly identify the most profitable pricing strategy from historical data. PizzaHub could implement data-driven experimentation, using similar algorithms to continually test and adapt pricing in new regions.
+
+
+Region-specific pricing strategy:
+
+
+For high-delivery-cost regions like Region 4, delivery fee discounts are relatively inefficient: they raise demand only modestly and significantly reduce profit per order. If a discount is required, a small product discount combined with a transparent but higher delivery fee may be preferable.
+9. Conclusion
+PizzaHub’s targeted discount strategy was successful at increasing demand, especially in Region 3. The DiD approach provides strong causal evidence that food discounts have a greater effect on demand than delivery discounts, with an estimated uplift of +6.73 vs +3.82 pizzas per day respectively.
+
+At the same time, our profit analysis shows that no-discount pricing currently yields the highest profit per order, with food discounts being less profitable and delivery discounts the least profitable of the three strategies. This highlights an important trade-off for PizzaHub: discounts are effective tools for demand generation and market penetration, but they come at a cost to per-order profitability.
+Overall, PizzaHub should use food-based discounts strategically and selectively, especially in new or competitive regions, while relying on data-driven methods (like the multi-armed bandit framework used here) to continually evaluate whether the incremental demand from discounts justifies the associated profit sacrifice.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Appendix
+A. Regression Model Code (Python)
+B. Additional Tables & Figures
+Time series plots of quantity ordered by region (pre/post-discount)
+Robustness checks (optional)
